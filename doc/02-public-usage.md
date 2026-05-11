@@ -101,6 +101,36 @@ $result = $retype->changeFunctionParameterType(
 
 The current implementation mutates the matched function `PhpParser\Node\Param` native type and the direct function `@param` tag when `docType` is provided.
 
+## Plan A Function Return Type Change
+
+Function return changes also use the fully-qualified function name:
+
+```php
+use PhpParser\Node\Name;
+
+$plan = $retype->planFunctionReturnTypeChange(
+    functionName: 'App\\send_mail',
+    typeNode: new Name('SendResult'),
+    docType: 'SendResult',
+);
+```
+
+## Apply A Function Return Type Change
+
+The convenience method plans and applies in one call:
+
+```php
+use PhpParser\Node\Name;
+
+$result = $retype->changeFunctionReturnType(
+    functionName: 'App\\send_mail',
+    typeNode: new Name('SendResult'),
+    docType: 'SendResult',
+);
+```
+
+The current implementation mutates the matched `PhpParser\Node\Stmt\Function_` return type and the direct function `@return` tag when `docType` is provided.
+
 ## Remove A Native Type
 
 Pass `null` as `typeNode` to remove the native type while optionally keeping or changing PHPDoc:
@@ -126,6 +156,8 @@ For method and function parameters:
 - method names and parameter names must be short identifiers;
 - parameter indexes must be zero or positive;
 - native `void` and `never` are rejected because they are invalid parameter types;
+- native `void` and `never` are accepted as standalone return types;
+- nullable `void`, nullable `never`, nullable `mixed`, and unions containing `void` or `never` are rejected for return types;
 - blank PHPDoc type strings are rejected when provided.
 
 Navigation: [Documentation](README.md) | [Previous: Overview](01-overview.md) | [Next: Architecture](03-architecture.md)

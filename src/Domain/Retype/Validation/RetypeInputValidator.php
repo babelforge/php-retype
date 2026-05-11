@@ -111,6 +111,41 @@ final readonly class RetypeInputValidator
     }
 
     /**
+     * Validates a native type used as a return type.
+     *
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode the native type node
+     *
+     * @throws \InvalidArgumentException when the node is invalid for a return type
+     */
+    public static function guardReturnNativeType(
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+    ): void {
+        if (null === $typeNode) {
+            return;
+        }
+
+        if ($typeNode instanceof NullableType) {
+            $innerName = self::nativeIdentifierName($typeNode->type);
+
+            if ('void' === $innerName || 'never' === $innerName || 'mixed' === $innerName) {
+                throw new \InvalidArgumentException(sprintf('The nullable "%s" return type is not valid.', $innerName));
+            }
+
+            return;
+        }
+
+        if ($typeNode instanceof UnionType) {
+            foreach ($typeNode->types as $innerType) {
+                $innerName = self::nativeIdentifierName($innerType);
+
+                if ('void' === $innerName || 'never' === $innerName) {
+                    throw new \InvalidArgumentException(sprintf('The native "%s" return type cannot be part of a union.', $innerName));
+                }
+            }
+        }
+    }
+
+    /**
      * Flattens a native type node into leaf nodes.
      *
      * @param Identifier|Name|NullableType|UnionType|IntersectionType $typeNode the native type node
@@ -134,5 +169,19 @@ final readonly class RetypeInputValidator
         }
 
         return [$typeNode];
+    }
+
+    /**
+     * Returns the lower-case native identifier name for a type node when available.
+     *
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType $typeNode the native type node
+     */
+    private static function nativeIdentifierName(Identifier|Name|NullableType|UnionType|IntersectionType $typeNode): ?string
+    {
+        if (!$typeNode instanceof Identifier) {
+            return null;
+        }
+
+        return strtolower($typeNode->name);
     }
 }

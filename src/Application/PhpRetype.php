@@ -7,13 +7,16 @@ namespace PhpNoobs\PhpRetype\Application;
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
 use PhpNoobs\PhpRetype\Application\Contract\FunctionParameterTypeChangePlannerInterface;
+use PhpNoobs\PhpRetype\Application\Contract\FunctionReturnTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\MethodParameterTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\RetypePlanApplierInterface;
 use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
 use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypeResult;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\FunctionParameterTypeChangeRequest;
+use PhpNoobs\PhpRetype\Domain\Retype\Request\FunctionReturnTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\MethodParameterTypeChangeRequest;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphFunctionParameterTypeChangePlanner;
+use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphFunctionReturnTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphMethodParameterTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\AstRetypePlanApplier;
 use PhpParser\Node\Identifier;
@@ -33,12 +36,14 @@ final readonly class PhpRetype
      * @param MemberDependencyGraphBuild                  $build                              the member graph build used by retype operations
      * @param MethodParameterTypeChangePlannerInterface   $methodParameterTypeChangePlanner   the method parameter type change planner
      * @param FunctionParameterTypeChangePlannerInterface $functionParameterTypeChangePlanner the function parameter type change planner
+     * @param FunctionReturnTypeChangePlannerInterface    $functionReturnTypeChangePlanner    the function return type change planner
      * @param RetypePlanApplierInterface                  $retypePlanApplier                  the retype plan applier
      */
     private function __construct(
         private MemberDependencyGraphBuild $build,
         private MethodParameterTypeChangePlannerInterface $methodParameterTypeChangePlanner,
         private FunctionParameterTypeChangePlannerInterface $functionParameterTypeChangePlanner,
+        private FunctionReturnTypeChangePlannerInterface $functionReturnTypeChangePlanner,
         private RetypePlanApplierInterface $retypePlanApplier,
     ) {
     }
@@ -71,18 +76,21 @@ final readonly class PhpRetype
      * @param MemberDependencyGraphBuild                       $build                              the member graph build
      * @param MethodParameterTypeChangePlannerInterface|null   $methodParameterTypeChangePlanner   the optional method parameter type change planner override
      * @param FunctionParameterTypeChangePlannerInterface|null $functionParameterTypeChangePlanner the optional function parameter type change planner override
+     * @param FunctionReturnTypeChangePlannerInterface|null    $functionReturnTypeChangePlanner    the optional function return type change planner override
      * @param RetypePlanApplierInterface|null                  $retypePlanApplier                  the optional retype plan applier override
      */
     public static function fromBuild(
         MemberDependencyGraphBuild $build,
         ?MethodParameterTypeChangePlannerInterface $methodParameterTypeChangePlanner = null,
         ?FunctionParameterTypeChangePlannerInterface $functionParameterTypeChangePlanner = null,
+        ?FunctionReturnTypeChangePlannerInterface $functionReturnTypeChangePlanner = null,
         ?RetypePlanApplierInterface $retypePlanApplier = null,
     ): self {
         return new self(
             build: $build,
             methodParameterTypeChangePlanner: $methodParameterTypeChangePlanner ?? new MemberGraphMethodParameterTypeChangePlanner(),
             functionParameterTypeChangePlanner: $functionParameterTypeChangePlanner ?? new MemberGraphFunctionParameterTypeChangePlanner(),
+            functionReturnTypeChangePlanner: $functionReturnTypeChangePlanner ?? new MemberGraphFunctionReturnTypeChangePlanner(),
             retypePlanApplier: $retypePlanApplier ?? new AstRetypePlanApplier(),
         );
     }
@@ -208,6 +216,54 @@ final readonly class PhpRetype
                 typeNode: $typeNode,
                 docType: $docType,
                 parameterIndex: $parameterIndex,
+            ),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans a function return type change.
+     *
+     * @param string                                                       $functionName the fully-qualified function name
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode     the native PHP type node to write
+     * @param string|null                                                  $docType      the PHPDoc type to write in the `@return` tag
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function planFunctionReturnTypeChange(
+        string $functionName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+    ): RetypePlan {
+        return $this->functionReturnTypeChangePlanner->plan(
+            request: new FunctionReturnTypeChangeRequest(
+                functionName: $functionName,
+                typeNode: $typeNode,
+                docType: $docType,
+            ),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a function return type change to virtual file AST nodes.
+     *
+     * @param string                                                       $functionName the fully-qualified function name
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode     the native PHP type node to write
+     * @param string|null                                                  $docType      the PHPDoc type to write in the `@return` tag
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function changeFunctionReturnType(
+        string $functionName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+    ): RetypeResult {
+        return $this->retypePlanApplier->apply(
+            plan: $this->planFunctionReturnTypeChange(
+                functionName: $functionName,
+                typeNode: $typeNode,
+                docType: $docType,
             ),
             build: $this->build,
         );

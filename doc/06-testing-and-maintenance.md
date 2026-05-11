@@ -10,9 +10,12 @@ The integration tests cover:
 
 - method parameter native type changes;
 - function parameter native type changes;
+- function return native type changes;
 - direct `@param` type changes;
+- direct `@return` type changes;
 - native type removal;
-- invalid `void` parameter type rejection.
+- invalid `void` parameter type rejection;
+- invalid nullable and union return type rejection.
 
 ## Quality Commands
 

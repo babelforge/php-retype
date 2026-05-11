@@ -43,6 +43,17 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 
 The returned function parameter declaration matches are converted to retype operations.
 
+For function return type changes, planning starts from:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->function('App\\send_mail');
+```
+
+Only `MEMBER_DECLARATION` matches backed by `PhpParser\Node\Stmt\Function_` nodes are converted to retype operations.
+
 ## Parameter Scope
 
 The current slice only mutates parameter declarations.
@@ -62,7 +73,7 @@ The planner must report diagnostics instead of silently guessing.
 
 Examples:
 
-- target parameter not found;
+- target parameter or function not found;
 - source node cannot be located;
 - source node role is unsupported;
 - later slices may report unsupported declaration shapes.

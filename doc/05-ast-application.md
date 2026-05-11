@@ -42,6 +42,12 @@ Plans containing error diagnostics are not applied.
 
 The native parameter type is replaced with a clone of the caller-provided type node, or removed when `typeNode` is `null`.
 
+It also supports function return type changes for:
+
+- `PhpParser\Node\Stmt\Function_`.
+
+The native function return type is replaced with a clone of the caller-provided type node, or removed when `typeNode` is `null`.
+
 After successful node mutation, each touched `VirtualPhpSourceFile` is marked as updated through `VirtualPhpSourceFile::update()`.
 
 Unsupported target kinds or node types produce diagnostics instead of triggering fallback source inspection.
@@ -57,6 +63,14 @@ Current supported parameter docblock references:
 ```
 
 The supported `@param` tag type is rewritten only on the direct method or function docblock of a matched parameter declaration.
+
+Current supported return docblock references:
+
+```php
+@return OldType
+```
+
+The supported `@return` tag type is rewritten only on the direct function docblock of a matched function declaration.
 
 Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 
