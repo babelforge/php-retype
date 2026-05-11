@@ -101,6 +101,38 @@ $result = $retype->changeFunctionParameterType(
 
 The current implementation mutates the matched function `PhpParser\Node\Param` native type and the direct function `@param` tag when `docType` is provided.
 
+## Plan A Method Return Type Change
+
+Method return changes use the owner FQCN and method name:
+
+```php
+use PhpParser\Node\Name;
+
+$plan = $retype->planMethodReturnTypeChange(
+    className: App\Mailer::class,
+    methodName: 'send',
+    typeNode: new Name('SendResult'),
+    docType: 'SendResult',
+);
+```
+
+## Apply A Method Return Type Change
+
+The convenience method plans and applies in one call:
+
+```php
+use PhpParser\Node\Name;
+
+$result = $retype->changeMethodReturnType(
+    className: App\Mailer::class,
+    methodName: 'send',
+    typeNode: new Name('SendResult'),
+    docType: 'SendResult',
+);
+```
+
+The current implementation mutates the matched `PhpParser\Node\Stmt\ClassMethod` return type and the direct method `@return` tag when `docType` is provided.
+
 ## Plan A Function Return Type Change
 
 Function return changes also use the fully-qualified function name:

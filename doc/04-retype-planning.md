@@ -43,6 +43,17 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 
 The returned function parameter declaration matches are converted to retype operations.
 
+For method return type changes, planning starts from:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->method('App\\Mailer', 'send');
+```
+
+Only `MEMBER_DECLARATION` matches backed by `PhpParser\Node\Stmt\ClassMethod` nodes are converted to retype operations.
+
 For function return type changes, planning starts from:
 
 ```php

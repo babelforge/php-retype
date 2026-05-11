@@ -10,7 +10,7 @@ This page tracks which type-change operations are currently supported.
 | --- | --- | --- | --- | --- |
 | Method parameter | `MemberGraphSourceNodeLocator::parameter(...)` | `Param::$type` | Direct parent `@param` | Supported |
 | Function parameter | `MemberGraphSourceNodeLocator::parameter(...)` | `Param::$type` | Direct parent `@param` | Supported |
-| Method return | Not implemented | Not implemented | Not implemented | Planned |
+| Method return | `MemberGraphSourceNodeLocator::method(...)` | `ClassMethod::$returnType` | Direct method `@return` | Supported |
 | Function return | `MemberGraphSourceNodeLocator::function(...)` | `Function_::$returnType` | Direct function `@return` | Supported |
 | Property | Not implemented | Not implemented | Not implemented | Planned |
 | Promoted property | Not implemented | Not implemented | Not implemented | Planned |
@@ -46,7 +46,7 @@ For method and function parameters:
 - blank PHPDoc type strings are rejected;
 - parameter indexes must be zero or positive.
 
-For function returns:
+For method and function returns:
 
 - standalone `void` is accepted;
 - standalone `never` is accepted;

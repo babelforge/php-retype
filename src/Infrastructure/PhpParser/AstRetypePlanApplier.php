@@ -18,6 +18,7 @@ use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeNodeApplierInt
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Docblock\ParameterDocblockTypeApplier;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Docblock\ReturnDocblockTypeApplier;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Function_\FunctionReturnTypeNodeApplier;
+use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Method\MethodReturnTypeNodeApplier;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Parameter\ParameterTypeNodeApplier;
 use PhpNoobs\PhpSource\VirtualPhpSourceFile;
 
@@ -49,6 +50,7 @@ final readonly class AstRetypePlanApplier implements RetypePlanApplierInterface
         $this->nodeAppliers = $nodeAppliers ?? [
             new ParameterTypeNodeApplier(),
             new FunctionReturnTypeNodeApplier(),
+            new MethodReturnTypeNodeApplier(),
         ];
         $this->metadataAppliers = $metadataAppliers ?? [
             new ParameterDocblockTypeApplier(),

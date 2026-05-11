@@ -10,10 +10,11 @@ use PhpNoobs\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeApplicationContext;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeMetadataApplierInterface;
 use PhpParser\Comment\Doc;
+use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 
 /**
- * Rewrites supported `@return` docblock types for matched function declarations.
+ * Rewrites supported `@return` docblock types for matched function-like declarations.
  */
 final readonly class ReturnDocblockTypeApplier implements RetypeMetadataApplierInterface
 {
@@ -24,9 +25,12 @@ final readonly class ReturnDocblockTypeApplier implements RetypeMetadataApplierI
      */
     public function supports(RetypeOperation $operation): bool
     {
-        return RetypeTargetKind::FUNCTION_RETURN === $operation->targetKind
+        return (
+            RetypeTargetKind::FUNCTION_RETURN === $operation->targetKind
+            || RetypeTargetKind::METHOD_RETURN === $operation->targetKind
+        )
             && RetypeOperationRole::DECLARATION === $operation->role
-            && $operation->node instanceof Function_
+            && ($operation->node instanceof Function_ || $operation->node instanceof ClassMethod)
             && null !== $operation->docType;
     }
 
@@ -38,7 +42,7 @@ final readonly class ReturnDocblockTypeApplier implements RetypeMetadataApplierI
      */
     public function apply(RetypeOperation $operation, RetypeApplicationContext $context): void
     {
-        if (!$operation->node instanceof Function_ || null === $operation->docType) {
+        if ((!$operation->node instanceof Function_ && !$operation->node instanceof ClassMethod) || null === $operation->docType) {
             return;
         }
 

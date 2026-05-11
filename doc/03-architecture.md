@@ -10,6 +10,7 @@ The architecture follows the `php-rename` model while keeping type-specific sema
 
 - `MethodParameterTypeChangeRequest`: describes a method parameter type-change intent.
 - `FunctionParameterTypeChangeRequest`: describes a function parameter type-change intent.
+- `MethodReturnTypeChangeRequest`: describes a method return type-change intent.
 - `FunctionReturnTypeChangeRequest`: describes a function return type-change intent.
 - `RetypePlan`: contains planned operations and diagnostics.
 - `RetypeOperation`: targets one AST node in one virtual file.
@@ -34,6 +35,8 @@ It exposes:
 - `changeMethodParameterType()`;
 - `planFunctionParameterTypeChange()`;
 - `changeFunctionParameterType()`;
+- `planMethodReturnTypeChange()`;
+- `changeMethodReturnType()`;
 - `planFunctionReturnTypeChange()`;
 - `changeFunctionReturnType()`.
 
@@ -41,6 +44,7 @@ It exposes:
 
 - `MethodParameterTypeChangePlannerInterface`;
 - `FunctionParameterTypeChangePlannerInterface`;
+- `MethodReturnTypeChangePlannerInterface`;
 - `FunctionReturnTypeChangePlannerInterface`;
 - `RetypePlanApplierInterface`.
 
@@ -69,6 +73,7 @@ Current applier contracts:
 Current implementations:
 
 - `ParameterTypeNodeApplier`;
+- `MethodReturnTypeNodeApplier`;
 - `FunctionReturnTypeNodeApplier`;
 - `ParameterDocblockTypeApplier`;
 - `ReturnDocblockTypeApplier`.
