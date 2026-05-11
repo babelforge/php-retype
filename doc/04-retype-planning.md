@@ -32,7 +32,18 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 
 The returned parameter declaration matches are converted to retype operations.
 
-## Method Parameter Scope
+For function parameter type changes, planning starts from the same source-node locator with an empty owner and a fully-qualified function name:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->parameter('', 'App\\send_mail', 'message', 0);
+```
+
+The returned function parameter declaration matches are converted to retype operations.
+
+## Parameter Scope
 
 The current slice only mutates parameter declarations.
 

@@ -36,7 +36,7 @@ The applier returns a `RetypeResult` containing:
 
 Plans containing error diagnostics are not applied.
 
-`AstRetypePlanApplier` currently supports method parameter type changes for:
+`AstRetypePlanApplier` currently supports method and function parameter type changes for:
 
 - `PhpParser\Node\Param`.
 
@@ -56,7 +56,7 @@ Current supported parameter docblock references:
 @param OldType $parameterName
 ```
 
-The supported `@param` tag type is rewritten only on the direct function-like parent docblock of a matched parameter declaration.
+The supported `@param` tag type is rewritten only on the direct method or function docblock of a matched parameter declaration.
 
 Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 

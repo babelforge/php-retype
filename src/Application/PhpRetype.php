@@ -6,11 +6,14 @@ namespace PhpNoobs\PhpRetype\Application;
 
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
+use PhpNoobs\PhpRetype\Application\Contract\FunctionParameterTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\MethodParameterTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\RetypePlanApplierInterface;
 use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
 use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypeResult;
+use PhpNoobs\PhpRetype\Domain\Retype\Request\FunctionParameterTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\MethodParameterTypeChangeRequest;
+use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphFunctionParameterTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphMethodParameterTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\AstRetypePlanApplier;
 use PhpParser\Node\Identifier;
@@ -27,13 +30,15 @@ final readonly class PhpRetype
     /**
      * Constructor.
      *
-     * @param MemberDependencyGraphBuild                $build                            the member graph build used by retype operations
-     * @param MethodParameterTypeChangePlannerInterface $methodParameterTypeChangePlanner the method parameter type change planner
-     * @param RetypePlanApplierInterface                $retypePlanApplier                the retype plan applier
+     * @param MemberDependencyGraphBuild                  $build                              the member graph build used by retype operations
+     * @param MethodParameterTypeChangePlannerInterface   $methodParameterTypeChangePlanner   the method parameter type change planner
+     * @param FunctionParameterTypeChangePlannerInterface $functionParameterTypeChangePlanner the function parameter type change planner
+     * @param RetypePlanApplierInterface                  $retypePlanApplier                  the retype plan applier
      */
     private function __construct(
         private MemberDependencyGraphBuild $build,
         private MethodParameterTypeChangePlannerInterface $methodParameterTypeChangePlanner,
+        private FunctionParameterTypeChangePlannerInterface $functionParameterTypeChangePlanner,
         private RetypePlanApplierInterface $retypePlanApplier,
     ) {
     }
@@ -63,18 +68,21 @@ final readonly class PhpRetype
     /**
      * Creates a retype service from an existing member graph build.
      *
-     * @param MemberDependencyGraphBuild                     $build                            the member graph build
-     * @param MethodParameterTypeChangePlannerInterface|null $methodParameterTypeChangePlanner the optional method parameter type change planner override
-     * @param RetypePlanApplierInterface|null                $retypePlanApplier                the optional retype plan applier override
+     * @param MemberDependencyGraphBuild                       $build                              the member graph build
+     * @param MethodParameterTypeChangePlannerInterface|null   $methodParameterTypeChangePlanner   the optional method parameter type change planner override
+     * @param FunctionParameterTypeChangePlannerInterface|null $functionParameterTypeChangePlanner the optional function parameter type change planner override
+     * @param RetypePlanApplierInterface|null                  $retypePlanApplier                  the optional retype plan applier override
      */
     public static function fromBuild(
         MemberDependencyGraphBuild $build,
         ?MethodParameterTypeChangePlannerInterface $methodParameterTypeChangePlanner = null,
+        ?FunctionParameterTypeChangePlannerInterface $functionParameterTypeChangePlanner = null,
         ?RetypePlanApplierInterface $retypePlanApplier = null,
     ): self {
         return new self(
             build: $build,
             methodParameterTypeChangePlanner: $methodParameterTypeChangePlanner ?? new MemberGraphMethodParameterTypeChangePlanner(),
+            functionParameterTypeChangePlanner: $functionParameterTypeChangePlanner ?? new MemberGraphFunctionParameterTypeChangePlanner(),
             retypePlanApplier: $retypePlanApplier ?? new AstRetypePlanApplier(),
         );
     }
@@ -136,6 +144,66 @@ final readonly class PhpRetype
             plan: $this->planMethodParameterTypeChange(
                 className: $className,
                 methodName: $methodName,
+                parameterName: $parameterName,
+                typeNode: $typeNode,
+                docType: $docType,
+                parameterIndex: $parameterIndex,
+            ),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans a function parameter type change.
+     *
+     * @param string                                                       $functionName   the fully-qualified function name
+     * @param string                                                       $parameterName  the parameter name without "$"
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode       the native PHP type node to write
+     * @param string|null                                                  $docType        the PHPDoc type to write in the `@param` tag
+     * @param int|null                                                     $parameterIndex the optional zero-based declaration index
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function planFunctionParameterTypeChange(
+        string $functionName,
+        string $parameterName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+        ?int $parameterIndex = null,
+    ): RetypePlan {
+        return $this->functionParameterTypeChangePlanner->plan(
+            request: new FunctionParameterTypeChangeRequest(
+                functionName: $functionName,
+                parameterName: $parameterName,
+                typeNode: $typeNode,
+                docType: $docType,
+                parameterIndex: $parameterIndex,
+            ),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a function parameter type change to virtual file AST nodes.
+     *
+     * @param string                                                       $functionName   the fully-qualified function name
+     * @param string                                                       $parameterName  the parameter name without "$"
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode       the native PHP type node to write
+     * @param string|null                                                  $docType        the PHPDoc type to write in the `@param` tag
+     * @param int|null                                                     $parameterIndex the optional zero-based declaration index
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function changeFunctionParameterType(
+        string $functionName,
+        string $parameterName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+        ?int $parameterIndex = null,
+    ): RetypeResult {
+        return $this->retypePlanApplier->apply(
+            plan: $this->planFunctionParameterTypeChange(
+                functionName: $functionName,
                 parameterName: $parameterName,
                 typeNode: $typeNode,
                 docType: $docType,

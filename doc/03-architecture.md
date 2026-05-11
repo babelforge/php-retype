@@ -9,6 +9,7 @@ The architecture follows the `php-rename` model while keeping type-specific sema
 `Domain/Retype` contains the core retype model:
 
 - `MethodParameterTypeChangeRequest`: describes a method parameter type-change intent.
+- `FunctionParameterTypeChangeRequest`: describes a function parameter type-change intent.
 - `RetypePlan`: contains planned operations and diagnostics.
 - `RetypeOperation`: targets one AST node in one virtual file.
 - `RetypeResult`: contains the result of applying a plan.
@@ -29,11 +30,14 @@ It exposes:
 - `fromDirectory()`;
 - `fromBuild()`;
 - `planMethodParameterTypeChange()`;
-- `changeMethodParameterType()`.
+- `changeMethodParameterType()`;
+- `planFunctionParameterTypeChange()`;
+- `changeFunctionParameterType()`.
 
 `Application/Contract` contains the service contracts used by the facade:
 
 - `MethodParameterTypeChangePlannerInterface`;
+- `FunctionParameterTypeChangePlannerInterface`;
 - `RetypePlanApplierInterface`.
 
 ## Infrastructure

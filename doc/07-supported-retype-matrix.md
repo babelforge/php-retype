@@ -9,7 +9,7 @@ This page tracks which type-change operations are currently supported.
 | Target | Planning | Native Type Mutation | PHPDoc Mutation | Status |
 | --- | --- | --- | --- | --- |
 | Method parameter | `MemberGraphSourceNodeLocator::parameter(...)` | `Param::$type` | Direct parent `@param` | Supported |
-| Function parameter | Not implemented | Not implemented | Not implemented | Planned |
+| Function parameter | `MemberGraphSourceNodeLocator::parameter(...)` | `Param::$type` | Direct parent `@param` | Supported |
 | Method return | Not implemented | Not implemented | Not implemented | Planned |
 | Function return | Not implemented | Not implemented | Not implemented | Planned |
 | Property | Not implemented | Not implemented | Not implemented | Planned |
@@ -39,7 +39,7 @@ The caller is responsible for providing the PHPDoc representation explicitly. `P
 
 ## Current Parameter Validation
 
-For method parameters:
+For method and function parameters:
 
 - `void` is rejected;
 - `never` is rejected;

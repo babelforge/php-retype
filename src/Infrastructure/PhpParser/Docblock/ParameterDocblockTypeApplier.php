@@ -27,7 +27,10 @@ final readonly class ParameterDocblockTypeApplier implements RetypeMetadataAppli
      */
     public function supports(RetypeOperation $operation): bool
     {
-        return RetypeTargetKind::METHOD_PARAMETER === $operation->targetKind
+        return (
+            RetypeTargetKind::METHOD_PARAMETER === $operation->targetKind
+            || RetypeTargetKind::FUNCTION_PARAMETER === $operation->targetKind
+        )
             && RetypeOperationRole::DECLARATION === $operation->role
             && $operation->node instanceof Param
             && null !== $operation->docType;

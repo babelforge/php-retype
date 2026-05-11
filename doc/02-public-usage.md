@@ -67,6 +67,40 @@ $result = $retype->changeMethodParameterType(
 
 The current implementation mutates the matched `PhpParser\Node\Param` native type and the direct parent function-like `@param` tag when `docType` is provided.
 
+## Plan A Function Parameter Type Change
+
+Function parameters use the fully-qualified function name:
+
+```php
+use PhpParser\Node\Name;
+
+$plan = $retype->planFunctionParameterTypeChange(
+    functionName: 'App\\send_mail',
+    parameterName: 'message',
+    typeNode: new Name('Message'),
+    docType: 'Message',
+    parameterIndex: 0,
+);
+```
+
+## Apply A Function Parameter Type Change
+
+The convenience method plans and applies in one call:
+
+```php
+use PhpParser\Node\Name;
+
+$result = $retype->changeFunctionParameterType(
+    functionName: 'App\\send_mail',
+    parameterName: 'message',
+    typeNode: new Name('Message'),
+    docType: 'Message',
+    parameterIndex: 0,
+);
+```
+
+The current implementation mutates the matched function `PhpParser\Node\Param` native type and the direct function `@param` tag when `docType` is provided.
+
 ## Remove A Native Type
 
 Pass `null` as `typeNode` to remove the native type while optionally keeping or changing PHPDoc:
@@ -86,7 +120,7 @@ $result = $retype->changeMethodParameterType(
 
 Requests validate basic input before `member-graph` lookup.
 
-For method parameters:
+For method and function parameters:
 
 - class names must be FQCN-like;
 - method names and parameter names must be short identifiers;

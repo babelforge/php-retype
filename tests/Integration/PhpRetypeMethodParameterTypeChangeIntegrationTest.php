@@ -134,6 +134,75 @@ final class PhpRetypeMethodParameterTypeChangeIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures function parameter retyping mutates the native type and direct `@param` type.
+     */
+    public function testItChangesFunctionParameterNativeTypeAndDocblockType(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeFunctionFile($srcDirectory.'/functions.php');
+        $this->writeMessageFile($srcDirectory.'/Message.php');
+
+        $retype = PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+        );
+
+        $result = $retype->changeFunctionParameterType(
+            functionName: 'App\\send_mail',
+            parameterName: 'message',
+            typeNode: new Name('Message'),
+            docType: 'Message',
+            parameterIndex: 0,
+        );
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(1, $result->plan->operations);
+        self::assertCount(0, $result->diagnostics);
+        self::assertCount(0, $result->plan->diagnostics);
+        self::assertSame(1, $this->updatedVirtualFileCount($result->virtualFiles));
+        self::assertStringContainsString('@param Message $message', $printedCode);
+        self::assertStringContainsString('function send_mail(Message $message): void', $printedCode);
+        self::assertStringNotContainsString('@param string $message', $printedCode);
+        self::assertStringNotContainsString('function send_mail(string $message): void', $printedCode);
+    }
+
+    /**
+     * Ensures function parameter retyping supports declaration index targeting.
+     */
+    public function testItChangesFunctionParameterTypeAtIndex(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeIndexedFunctionFile($srcDirectory.'/functions.php');
+
+        $retype = PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+        );
+
+        $result = $retype->changeFunctionParameterType(
+            functionName: 'App\\send_mail',
+            parameterName: 'transport',
+            typeNode: new Identifier('array'),
+            docType: 'array{dsn: string}',
+            parameterIndex: 1,
+        );
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(1, $result->plan->operations);
+        self::assertCount(0, $result->diagnostics);
+        self::assertStringContainsString('@param array{dsn: string} $transport', $printedCode);
+        self::assertStringContainsString('function send_mail(string $message, array $transport): void', $printedCode);
+        self::assertStringContainsString('@param string $message', $printedCode);
+        self::assertStringContainsString('string $message', $printedCode);
+    }
+
+    /**
      * Writes the mailer fixture.
      *
      * @param string $filePath the file path
@@ -170,6 +239,49 @@ final class PhpRetypeMethodParameterTypeChangeIntegrationTest extends TestCase
             namespace App;
 
             final class Message
+            {
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the function fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeFunctionFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            /**
+             * @param string $message
+             */
+            function send_mail(string $message): void
+            {
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the indexed function fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeIndexedFunctionFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            /**
+             * @param string $message
+             * @param string $transport
+             */
+            function send_mail(string $message, string $transport): void
             {
             }
             PHP);

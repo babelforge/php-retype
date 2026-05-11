@@ -9,6 +9,7 @@ Tests should stay focused on the package boundary: planning from `member-graph` 
 The integration tests cover:
 
 - method parameter native type changes;
+- function parameter native type changes;
 - direct `@param` type changes;
 - native type removal;
 - invalid `void` parameter type rejection.

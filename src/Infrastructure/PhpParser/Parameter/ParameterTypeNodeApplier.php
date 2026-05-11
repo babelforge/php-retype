@@ -24,7 +24,8 @@ final readonly class ParameterTypeNodeApplier implements RetypeNodeApplierInterf
      */
     public function supports(RetypeOperation $operation): bool
     {
-        return RetypeTargetKind::METHOD_PARAMETER === $operation->targetKind;
+        return RetypeTargetKind::METHOD_PARAMETER === $operation->targetKind
+            || RetypeTargetKind::FUNCTION_PARAMETER === $operation->targetKind;
     }
 
     /**

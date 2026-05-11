@@ -49,14 +49,14 @@ The current implementation provides:
 
 - `PhpRetype` public facade;
 - `fromDirectory()` and `fromBuild()` construction paths;
-- plan/apply APIs for method parameter type changes;
+- plan/apply APIs for method and function parameter type changes;
 - domain DTOs for plans, operations, results, and diagnostics;
 - contracts for planning and applying retype plans;
-- a `member-graph` planner that converts parameter declaration matches into retype operations;
+- `member-graph` planners that convert parameter declaration matches into retype operations;
 - PHPParser appliers that mutate matched parameter declaration nodes and direct `@param` tags;
 - basic native parameter type validation.
 
-The current implementation does not yet support return types, function parameters, properties, promoted properties, transactions, or physical save helpers.
+The current implementation does not yet support return types, properties, promoted properties, transactions, or physical save helpers.
 
 ## Graph Freshness
 
