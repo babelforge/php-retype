@@ -1,0 +1,147 @@
+<?php
+
+declare(strict_types=1);
+
+namespace PhpNoobs\PhpRetype\Application;
+
+use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
+use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
+use PhpNoobs\PhpRetype\Application\Contract\MethodParameterTypeChangePlannerInterface;
+use PhpNoobs\PhpRetype\Application\Contract\RetypePlanApplierInterface;
+use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
+use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypeResult;
+use PhpNoobs\PhpRetype\Domain\Retype\Request\MethodParameterTypeChangeRequest;
+use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphMethodParameterTypeChangePlanner;
+use PhpNoobs\PhpRetype\Infrastructure\PhpParser\AstRetypePlanApplier;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\IntersectionType;
+use PhpParser\Node\Name;
+use PhpParser\Node\NullableType;
+use PhpParser\Node\UnionType;
+
+/**
+ * Public facade for planning and applying PHP type changes.
+ */
+final readonly class PhpRetype
+{
+    /**
+     * Constructor.
+     *
+     * @param MemberDependencyGraphBuild                $build                            the member graph build used by retype operations
+     * @param MethodParameterTypeChangePlannerInterface $methodParameterTypeChangePlanner the method parameter type change planner
+     * @param RetypePlanApplierInterface                $retypePlanApplier                the retype plan applier
+     */
+    private function __construct(
+        private MemberDependencyGraphBuild $build,
+        private MethodParameterTypeChangePlannerInterface $methodParameterTypeChangePlanner,
+        private RetypePlanApplierInterface $retypePlanApplier,
+    ) {
+    }
+
+    /**
+     * Creates a retype service from project directories.
+     *
+     * @param list<string> $directories         the directories to scan
+     * @param string       $cacheFilePath       the member graph cache file path
+     * @param list<string> $excludedDirectories the directories to exclude from scanning
+     * @param bool         $clearCache          whether the member graph cache must be cleared first
+     */
+    public static function fromDirectory(
+        array $directories,
+        string $cacheFilePath,
+        array $excludedDirectories = [],
+        bool $clearCache = false,
+    ): self {
+        return self::fromBuild(MemberDependencyGraphFactory::fromDirectory(
+            directories: $directories,
+            cacheFilePath: $cacheFilePath,
+            excludedDirectories: $excludedDirectories,
+            clearCache: $clearCache,
+        ));
+    }
+
+    /**
+     * Creates a retype service from an existing member graph build.
+     *
+     * @param MemberDependencyGraphBuild                     $build                            the member graph build
+     * @param MethodParameterTypeChangePlannerInterface|null $methodParameterTypeChangePlanner the optional method parameter type change planner override
+     * @param RetypePlanApplierInterface|null                $retypePlanApplier                the optional retype plan applier override
+     */
+    public static function fromBuild(
+        MemberDependencyGraphBuild $build,
+        ?MethodParameterTypeChangePlannerInterface $methodParameterTypeChangePlanner = null,
+        ?RetypePlanApplierInterface $retypePlanApplier = null,
+    ): self {
+        return new self(
+            build: $build,
+            methodParameterTypeChangePlanner: $methodParameterTypeChangePlanner ?? new MemberGraphMethodParameterTypeChangePlanner(),
+            retypePlanApplier: $retypePlanApplier ?? new AstRetypePlanApplier(),
+        );
+    }
+
+    /**
+     * Plans a method parameter type change.
+     *
+     * @param string                                                       $className      the method owner FQCN
+     * @param string                                                       $methodName     the method name
+     * @param string                                                       $parameterName  the parameter name without "$"
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode       the native PHP type node to write
+     * @param string|null                                                  $docType        the PHPDoc type to write in the `@param` tag
+     * @param int|null                                                     $parameterIndex the optional zero-based declaration index
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function planMethodParameterTypeChange(
+        string $className,
+        string $methodName,
+        string $parameterName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+        ?int $parameterIndex = null,
+    ): RetypePlan {
+        return $this->methodParameterTypeChangePlanner->plan(
+            request: new MethodParameterTypeChangeRequest(
+                className: $className,
+                methodName: $methodName,
+                parameterName: $parameterName,
+                typeNode: $typeNode,
+                docType: $docType,
+                parameterIndex: $parameterIndex,
+            ),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a method parameter type change to virtual file AST nodes.
+     *
+     * @param string                                                       $className      the method owner FQCN
+     * @param string                                                       $methodName     the method name
+     * @param string                                                       $parameterName  the parameter name without "$"
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode       the native PHP type node to write
+     * @param string|null                                                  $docType        the PHPDoc type to write in the `@param` tag
+     * @param int|null                                                     $parameterIndex the optional zero-based declaration index
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function changeMethodParameterType(
+        string $className,
+        string $methodName,
+        string $parameterName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+        ?int $parameterIndex = null,
+    ): RetypeResult {
+        return $this->retypePlanApplier->apply(
+            plan: $this->planMethodParameterTypeChange(
+                className: $className,
+                methodName: $methodName,
+                parameterName: $parameterName,
+                typeNode: $typeNode,
+                docType: $docType,
+                parameterIndex: $parameterIndex,
+            ),
+            build: $this->build,
+        );
+    }
+}
