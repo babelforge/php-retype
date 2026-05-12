@@ -6,6 +6,7 @@ namespace PhpNoobs\PhpRetype\Tests\Integration;
 
 use PhpNoobs\PhpRetype\Application\PhpRetype;
 use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PHPUnit\Framework\TestCase;
 
@@ -128,6 +129,167 @@ final class PhpRetypePropertyTypeChangeIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures grouped property splitting preserves flags, attributes, defaults, and original metadata.
+     */
+    public function testItPreservesGroupedPropertyStructureWhenSplitting(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeDecoratedGroupedPropertyFile($srcDirectory.'/Mailer.php');
+        $this->writeTransportFile($srcDirectory.'/Transport.php');
+
+        $result = PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        )->changePropertyType(
+            className: 'App\\Mailer',
+            propertyNames: ['transport', 'backupTransport'],
+            typeNode: new Name('Transport'),
+            docType: 'Transport',
+        );
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(1, $result->plan->operations);
+        self::assertCount(0, $result->diagnostics);
+        self::assertSame(2, substr_count($printedCode, '#[\\App\\TransportSlot]'));
+        self::assertStringContainsString('@var Transport active transports', $printedCode);
+        self::assertStringContainsString('protected static Transport $transport = \'smtp\', $backupTransport = \'sendmail\';', $printedCode);
+        self::assertStringContainsString('@var string active transports', $printedCode);
+        self::assertStringContainsString('protected static string $legacyTransport = \'mail\';', $printedCode);
+    }
+
+    /**
+     * Ensures property retyping can remove a native type while changing the PHPDoc type.
+     */
+    public function testItCanRemovePropertyNativeTypeWhileChangingDocblockType(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeGroupedPropertyFile($srcDirectory.'/Mailer.php');
+
+        $result = PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        )->changePropertyType(
+            className: 'App\\Mailer',
+            propertyNames: ['transport', 'backupTransport', 'legacyTransport'],
+            typeNode: null,
+            docType: 'array{dsn: string}',
+        );
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(1, $result->plan->operations);
+        self::assertCount(0, $result->diagnostics);
+        self::assertStringContainsString('@var array{dsn: string}', $printedCode);
+        self::assertStringContainsString('private $transport, $backupTransport, $legacyTransport;', $printedCode);
+        self::assertStringNotContainsString('private string $transport', $printedCode);
+    }
+
+    /**
+     * Ensures properties split across declarations produce a blocking diagnostic.
+     */
+    public function testItBlocksPropertyRetypeWhenRequestedPropertiesAreSplitAcrossDeclarations(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeSplitPropertyFile($srcDirectory.'/Mailer.php');
+        $this->writeTransportFile($srcDirectory.'/Transport.php');
+
+        $result = PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        )->changePropertyType(
+            className: 'App\\Mailer',
+            propertyNames: ['transport', 'backupTransport'],
+            typeNode: new Name('Transport'),
+            docType: 'Transport',
+        );
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(0, $result->plan->operations);
+        self::assertTrue($result->plan->diagnostics->hasErrors());
+        self::assertStringContainsString('private string $transport;', $printedCode);
+        self::assertStringContainsString('private string $backupTransport;', $printedCode);
+        self::assertStringNotContainsString('private Transport $transport;', $printedCode);
+    }
+
+    /**
+     * Ensures a transaction rebuilds its graph after a property split before planning the next action.
+     */
+    public function testItRebuildsTheTransactionGraphAfterAPropertySplit(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeGroupedPropertyFile($srcDirectory.'/Mailer.php');
+        $this->writeTransportFile($srcDirectory.'/Transport.php');
+
+        $transaction = PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        )->beginTransaction();
+
+        $transaction->changePropertyType(
+            className: 'App\\Mailer',
+            propertyNames: ['transport', 'backupTransport'],
+            typeNode: new Name('Transport'),
+            docType: 'Transport',
+        );
+        $transaction->changePropertyType(
+            className: 'App\\Mailer',
+            propertyNames: 'legacyTransport',
+            typeNode: new Name('Transport'),
+            docType: 'Transport',
+        );
+
+        $transactionResult = $transaction->commit();
+        $printedCode = $this->printedCode($transactionResult->virtualFiles);
+
+        self::assertCount(2, $transactionResult->actionResults);
+        self::assertCount(0, $transactionResult->diagnostics);
+        self::assertStringContainsString('private \\App\\Transport $transport, $backupTransport;', $printedCode);
+        self::assertStringContainsString('private \\App\\Transport $legacyTransport;', $printedCode);
+        self::assertStringNotContainsString('private string $legacyTransport;', $printedCode);
+    }
+
+    /**
+     * Ensures invalid property native types are rejected before planning.
+     */
+    public function testItRejectsVoidPropertyTypeBeforePlanning(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The native "void" type is not valid for a property.');
+
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeGroupedPropertyFile($srcDirectory.'/Mailer.php');
+
+        PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        )->planPropertyTypeChange(
+            className: 'App\\Mailer',
+            propertyNames: 'transport',
+            typeNode: new Identifier('void'),
+            docType: 'void',
+        );
+    }
+
+    /**
      * Writes the grouped property fixture.
      *
      * @param string $filePath the file path
@@ -170,6 +332,56 @@ final class PhpRetypePropertyTypeChangeIntegrationTest extends TestCase
                     public string $transport,
                 ) {
                 }
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the decorated grouped property fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeDecoratedGroupedPropertyFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            use Attribute;
+
+            #[Attribute]
+            final class TransportSlot
+            {
+            }
+
+            final class Mailer
+            {
+                /**
+                 * @var string active transports
+                 */
+                #[TransportSlot]
+                protected static string $transport = 'smtp', $backupTransport = 'sendmail', $legacyTransport = 'mail';
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the split property fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeSplitPropertyFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                private string $transport;
+                private string $backupTransport;
             }
             PHP);
     }
