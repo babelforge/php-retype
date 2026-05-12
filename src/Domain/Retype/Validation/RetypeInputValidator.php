@@ -93,6 +93,34 @@ final readonly class RetypeInputValidator
     public static function guardParameterNativeType(
         Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
     ): void {
+        self::guardNonVoidNonNeverNativeType($typeNode, 'parameter');
+    }
+
+    /**
+     * Validates a native type used on a property.
+     *
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode the native type node
+     *
+     * @throws \InvalidArgumentException when the node is invalid for a property
+     */
+    public static function guardPropertyNativeType(
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+    ): void {
+        self::guardNonVoidNonNeverNativeType($typeNode, 'property');
+    }
+
+    /**
+     * Validates a native type that cannot contain void or never.
+     *
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode the native type node
+     * @param string                                                       $target   the target name used in exception messages
+     *
+     * @throws \InvalidArgumentException when the node is invalid for the target
+     */
+    private static function guardNonVoidNonNeverNativeType(
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        string $target,
+    ): void {
         if (null === $typeNode) {
             return;
         }
@@ -105,7 +133,7 @@ final readonly class RetypeInputValidator
             $name = strtolower($node->name);
 
             if ('void' === $name || 'never' === $name) {
-                throw new \InvalidArgumentException(sprintf('The native "%s" type is not valid for a parameter.', $name));
+                throw new \InvalidArgumentException(sprintf('The native "%s" type is not valid for a %s.', $name, $target));
             }
         }
     }

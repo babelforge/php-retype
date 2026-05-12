@@ -21,12 +21,13 @@ final readonly class RetypeOperation
     /**
      * Constructor.
      *
-     * @param RetypeTargetKind                                             $targetKind the retyped target kind
-     * @param RetypeOperationRole                                          $role       the operation role in the plan
-     * @param VirtualPhpSourceFile                                         $file       the virtual source file containing the node
-     * @param Node                                                         $node       the AST node to mutate
-     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode   the native PHP type node to write
-     * @param string|null                                                  $docType    the PHPDoc type to write when relevant
+     * @param RetypeTargetKind                                             $targetKind      the retyped target kind
+     * @param RetypeOperationRole                                          $role            the operation role in the plan
+     * @param VirtualPhpSourceFile                                         $file            the virtual source file containing the node
+     * @param Node                                                         $node            the AST node to mutate
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode        the native PHP type node to write
+     * @param string|null                                                  $docType         the PHPDoc type to write when relevant
+     * @param PropertyRetypeOperationContext|null                          $propertyContext the optional property-specific structural context
      */
     public function __construct(
         public RetypeTargetKind $targetKind,
@@ -35,6 +36,7 @@ final readonly class RetypeOperation
         public Node $node,
         public Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
         public ?string $docType,
+        public ?PropertyRetypeOperationContext $propertyContext = null,
     ) {
     }
 }

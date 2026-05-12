@@ -49,6 +49,15 @@ It also supports method and function return type changes for:
 
 The native function-like return type is replaced with a clone of the caller-provided type node, or removed when `typeNode` is `null`.
 
+It supports property type changes for:
+
+- `PhpParser\Node\Stmt\Property`;
+- promoted property `PhpParser\Node\Param`.
+
+When every property in a grouped `Property` statement is targeted, the native property type is replaced in place.
+
+When only part of a grouped `Property` statement is targeted, the applier keeps the targeted properties on the original statement, writes the new native type there, and inserts a second statement for the remaining properties with their original native type.
+
 After successful node mutation, each touched `VirtualPhpSourceFile` is marked as updated through `VirtualPhpSourceFile::update()`.
 
 Unsupported target kinds or node types produce diagnostics instead of triggering fallback source inspection.
@@ -72,6 +81,14 @@ Supported return docblock references:
 ```
 
 The supported `@return` tag type is rewritten only on the direct method or function docblock of a matched function-like declaration.
+
+Supported property docblock references:
+
+```php
+@var OldType
+```
+
+The supported `@var` tag type is rewritten only on the direct property or promoted-property docblock owner reported by `member-graph`.
 
 Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 

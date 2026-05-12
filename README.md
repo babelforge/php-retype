@@ -2,7 +2,7 @@
 
 `php-noobs/php-retype` is a semantic PHP type refactoring library built on `php-noobs/member-graph` and `php-noobs/php-source-registry`.
 
-It changes PHP type declarations from semantic graph facts instead of textual search. The package supports method parameter, function parameter, method return, and function return type changes, with native PHP types and PHPDoc types provided as separate explicit inputs.
+It changes PHP type declarations from semantic graph facts instead of textual search. The package supports property, method parameter, function parameter, method return, and function return type changes, with native PHP types and PHPDoc types provided as separate explicit inputs.
 
 ## Installation
 
@@ -37,6 +37,19 @@ $result = $retype->changeMethodParameterType(
     parameterIndex: 0,
 );
 ```
+
+Property type changes accept one property name or a list of grouped property names:
+
+```php
+$result = $retype->changePropertyType(
+    className: App\Mailer::class,
+    propertyNames: ['transport', 'backupTransport'],
+    typeNode: new Name('Transport'),
+    docType: 'Transport',
+);
+```
+
+When only part of a grouped property declaration is targeted, the declaration is split so untargeted properties keep their original type.
 
 `typeNode` is the PHPParser native type node to write. `docType` is the PHPDoc type string to write. Passing `null` as `typeNode` removes the native type, and passing `null` as `docType` leaves the supported PHPDoc tag unchanged.
 
@@ -98,8 +111,9 @@ Step execution applies one plan and returns the refreshed context for the next o
 | Function parameter | Supported | Direct `@param` |
 | Method return | Supported | Direct `@return` |
 | Function return | Supported | Direct `@return` |
+| Property | Supported | Direct `@var` |
 
-Properties and promoted properties are not implemented.
+Promoted properties are supported through their promoted parameter node.
 
 ## Documentation
 

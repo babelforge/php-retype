@@ -65,9 +65,24 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 
 Only `MEMBER_DECLARATION` matches backed by `PhpParser\Node\Stmt\Function_` nodes are converted to retype operations.
 
+For property type changes, planning starts from:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$context = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->propertyDeclarationContext('App\\Mailer', ['transport', 'backupTransport']);
+```
+
+The returned property declaration context is converted to one or more retype operations.
+
+Grouped property declarations produce one operation per parent `Property` statement. Promoted properties produce one operation per promoted `Param`.
+
 ## Parameter Scope
 
 Parameter type changes mutate parameter declarations.
+
+Property type changes mutate property declarations. Grouped property declarations are split when only part of the group is targeted.
 
 It deliberately ignores:
 
@@ -85,6 +100,7 @@ The planner reports diagnostics instead of silently guessing.
 Examples:
 
 - target parameter or function not found;
+- target property not found;
 - source node cannot be located;
 - source node role is unsupported;
 - unsupported declaration shapes.

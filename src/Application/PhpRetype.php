@@ -10,6 +10,7 @@ use PhpNoobs\PhpRetype\Application\Contract\FunctionParameterTypeChangePlannerIn
 use PhpNoobs\PhpRetype\Application\Contract\FunctionReturnTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\MethodParameterTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\MethodReturnTypeChangePlannerInterface;
+use PhpNoobs\PhpRetype\Application\Contract\PropertyTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\RetypePlanApplierInterface;
 use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
 use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypeResult;
@@ -17,12 +18,14 @@ use PhpNoobs\PhpRetype\Domain\Retype\Request\FunctionParameterTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\FunctionReturnTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\MethodParameterTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\MethodReturnTypeChangeRequest;
+use PhpNoobs\PhpRetype\Domain\Retype\Request\PropertyTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepContext;
 use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepResult;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphFunctionParameterTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphFunctionReturnTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphMethodParameterTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphMethodReturnTypeChangePlanner;
+use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphPropertyTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\AstRetypePlanApplier;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\IntersectionType;
@@ -43,6 +46,7 @@ final readonly class PhpRetype
      * @param FunctionParameterTypeChangePlannerInterface $functionParameterTypeChangePlanner the function parameter type change planner
      * @param FunctionReturnTypeChangePlannerInterface    $functionReturnTypeChangePlanner    the function return type change planner
      * @param MethodReturnTypeChangePlannerInterface      $methodReturnTypeChangePlanner      the method return type change planner
+     * @param PropertyTypeChangePlannerInterface          $propertyTypeChangePlanner          the property type change planner
      * @param RetypePlanApplierInterface                  $retypePlanApplier                  the retype plan applier
      * @param RetypeStepExecutor                          $retypeStepExecutor                 the retype step executor
      */
@@ -52,6 +56,7 @@ final readonly class PhpRetype
         private FunctionParameterTypeChangePlannerInterface $functionParameterTypeChangePlanner,
         private FunctionReturnTypeChangePlannerInterface $functionReturnTypeChangePlanner,
         private MethodReturnTypeChangePlannerInterface $methodReturnTypeChangePlanner,
+        private PropertyTypeChangePlannerInterface $propertyTypeChangePlanner,
         private RetypePlanApplierInterface $retypePlanApplier,
         private RetypeStepExecutor $retypeStepExecutor,
     ) {
@@ -87,6 +92,7 @@ final readonly class PhpRetype
      * @param FunctionParameterTypeChangePlannerInterface|null $functionParameterTypeChangePlanner the optional function parameter type change planner override
      * @param FunctionReturnTypeChangePlannerInterface|null    $functionReturnTypeChangePlanner    the optional function return type change planner override
      * @param MethodReturnTypeChangePlannerInterface|null      $methodReturnTypeChangePlanner      the optional method return type change planner override
+     * @param PropertyTypeChangePlannerInterface|null          $propertyTypeChangePlanner          the optional property type change planner override
      * @param RetypePlanApplierInterface|null                  $retypePlanApplier                  the optional retype plan applier override
      */
     public static function fromBuild(
@@ -95,6 +101,7 @@ final readonly class PhpRetype
         ?FunctionParameterTypeChangePlannerInterface $functionParameterTypeChangePlanner = null,
         ?FunctionReturnTypeChangePlannerInterface $functionReturnTypeChangePlanner = null,
         ?MethodReturnTypeChangePlannerInterface $methodReturnTypeChangePlanner = null,
+        ?PropertyTypeChangePlannerInterface $propertyTypeChangePlanner = null,
         ?RetypePlanApplierInterface $retypePlanApplier = null,
     ): self {
         $retypePlanApplier ??= new AstRetypePlanApplier();
@@ -105,6 +112,7 @@ final readonly class PhpRetype
             functionParameterTypeChangePlanner: $functionParameterTypeChangePlanner ?? new MemberGraphFunctionParameterTypeChangePlanner(),
             functionReturnTypeChangePlanner: $functionReturnTypeChangePlanner ?? new MemberGraphFunctionReturnTypeChangePlanner(),
             methodReturnTypeChangePlanner: $methodReturnTypeChangePlanner ?? new MemberGraphMethodReturnTypeChangePlanner(),
+            propertyTypeChangePlanner: $propertyTypeChangePlanner ?? new MemberGraphPropertyTypeChangePlanner(),
             retypePlanApplier: $retypePlanApplier,
             retypeStepExecutor: new RetypeStepExecutor($retypePlanApplier),
         );
@@ -121,6 +129,7 @@ final readonly class PhpRetype
             functionParameterTypeChangePlanner: $this->functionParameterTypeChangePlanner,
             functionReturnTypeChangePlanner: $this->functionReturnTypeChangePlanner,
             methodReturnTypeChangePlanner: $this->methodReturnTypeChangePlanner,
+            propertyTypeChangePlanner: $this->propertyTypeChangePlanner,
             retypePlanApplier: $this->retypePlanApplier,
         );
     }
@@ -251,6 +260,35 @@ final readonly class PhpRetype
             request: new MethodReturnTypeChangeRequest(
                 className: $className,
                 methodName: $methodName,
+                typeNode: $typeNode,
+                docType: $docType,
+            ),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable property type-change step.
+     *
+     * @param RetypeStepContext                                            $context       the current retype step context
+     * @param string                                                       $className     the property owner FQCN
+     * @param string|list<string>                                          $propertyNames the property name or property names without "$"
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode      the native PHP type node to write
+     * @param string|null                                                  $docType       the PHPDoc type to write in the `@var` tag
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function executeStepPropertyTypeChange(
+        RetypeStepContext $context,
+        string $className,
+        string|array $propertyNames,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+    ): RetypeStepResult {
+        return $this->executeStep($this->propertyTypeChangePlanner->plan(
+            request: new PropertyTypeChangeRequest(
+                className: $className,
+                propertyNames: $propertyNames,
                 typeNode: $typeNode,
                 docType: $docType,
             ),
@@ -479,6 +517,60 @@ final readonly class PhpRetype
             plan: $this->planMethodReturnTypeChange(
                 className: $className,
                 methodName: $methodName,
+                typeNode: $typeNode,
+                docType: $docType,
+            ),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans a property type change.
+     *
+     * @param string                                                       $className     the property owner FQCN
+     * @param string|list<string>                                          $propertyNames the property name or property names without "$"
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode      the native PHP type node to write
+     * @param string|null                                                  $docType       the PHPDoc type to write in the `@var` tag
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function planPropertyTypeChange(
+        string $className,
+        string|array $propertyNames,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+    ): RetypePlan {
+        return $this->propertyTypeChangePlanner->plan(
+            request: new PropertyTypeChangeRequest(
+                className: $className,
+                propertyNames: $propertyNames,
+                typeNode: $typeNode,
+                docType: $docType,
+            ),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a property type change to virtual file AST nodes.
+     *
+     * @param string                                                       $className     the property owner FQCN
+     * @param string|list<string>                                          $propertyNames the property name or property names without "$"
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode      the native PHP type node to write
+     * @param string|null                                                  $docType       the PHPDoc type to write in the `@var` tag
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function changePropertyType(
+        string $className,
+        string|array $propertyNames,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+    ): RetypeResult {
+        return $this->retypePlanApplier->apply(
+            plan: $this->planPropertyTypeChange(
+                className: $className,
+                propertyNames: $propertyNames,
                 typeNode: $typeNode,
                 docType: $docType,
             ),

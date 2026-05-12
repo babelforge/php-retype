@@ -57,7 +57,8 @@ The available step methods mirror the supported direct operations:
 - `executeStepMethodParameterTypeChange()`;
 - `executeStepFunctionParameterTypeChange()`;
 - `executeStepMethodReturnTypeChange()`;
-- `executeStepFunctionReturnTypeChange()`.
+- `executeStepFunctionReturnTypeChange()`;
+- `executeStepPropertyTypeChange()`.
 
 Each successful step applies the plan to virtual files and returns a refreshed `RetypeStepContext`.
 
@@ -100,6 +101,42 @@ External orchestrators such as `php-refactor` call the `executeStep...TypeChange
 `commit()` remains in-memory only. Physical file writing is still owned by the source registry available through the final member graph build.
 
 `rollback()` restores the virtual files touched by successful transaction actions.
+
+## Plan A Property Type Change
+
+Property type changes use the owner FQCN and one property name or a list of grouped property names:
+
+```php
+use PhpParser\Node\Name;
+
+$plan = $retype->planPropertyTypeChange(
+    className: App\Mailer::class,
+    propertyNames: ['transport', 'backupTransport'],
+    typeNode: new Name('Transport'),
+    docType: 'Transport',
+);
+```
+
+## Apply A Property Type Change
+
+The convenience method plans and applies in one call:
+
+```php
+use PhpParser\Node\Name;
+
+$result = $retype->changePropertyType(
+    className: App\Mailer::class,
+    propertyNames: ['transport', 'backupTransport'],
+    typeNode: new Name('Transport'),
+    docType: 'Transport',
+);
+```
+
+The operation mutates the matched property native type and the direct `@var` tag when `docType` is provided.
+
+If every property in a grouped declaration is targeted, the parent `Property::$type` is changed in place. If only a subset is targeted, the grouped declaration is split so untargeted properties keep their original native type and PHPDoc.
+
+Promoted properties are retyped through their promoted `PhpParser\Node\Param` node.
 
 ## Plan A Method Parameter Type Change
 
@@ -257,9 +294,9 @@ Requests validate basic input before `member-graph` lookup.
 For method and function parameters:
 
 - class names must be FQCN-like;
-- method names and parameter names must be short identifiers;
+- method names, parameter names, and property names must be short identifiers;
 - parameter indexes must be zero or positive;
-- native `void` and `never` are rejected because they are invalid parameter types;
+- native `void` and `never` are rejected because they are invalid parameter and property types;
 - native `void` and `never` are accepted as standalone return types;
 - nullable `void`, nullable `never`, nullable `mixed`, and unions containing `void` or `never` are rejected for return types;
 - blank PHPDoc type strings are rejected when provided.

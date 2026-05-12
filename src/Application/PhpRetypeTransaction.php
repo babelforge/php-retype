@@ -10,6 +10,7 @@ use PhpNoobs\PhpRetype\Application\Contract\FunctionParameterTypeChangePlannerIn
 use PhpNoobs\PhpRetype\Application\Contract\FunctionReturnTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\MethodParameterTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\MethodReturnTypeChangePlannerInterface;
+use PhpNoobs\PhpRetype\Application\Contract\PropertyTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\RetypePlanApplierInterface;
 use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
 use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
@@ -54,6 +55,7 @@ final class PhpRetypeTransaction
      * @param FunctionParameterTypeChangePlannerInterface $functionParameterTypeChangePlanner the function parameter type-change planner
      * @param FunctionReturnTypeChangePlannerInterface    $functionReturnTypeChangePlanner    the function return type-change planner
      * @param MethodReturnTypeChangePlannerInterface      $methodReturnTypeChangePlanner      the method return type-change planner
+     * @param PropertyTypeChangePlannerInterface          $propertyTypeChangePlanner          the property type-change planner
      * @param RetypePlanApplierInterface                  $retypePlanApplier                  the retype plan applier
      */
     public function __construct(
@@ -62,6 +64,7 @@ final class PhpRetypeTransaction
         private readonly FunctionParameterTypeChangePlannerInterface $functionParameterTypeChangePlanner,
         private readonly FunctionReturnTypeChangePlannerInterface $functionReturnTypeChangePlanner,
         private readonly MethodReturnTypeChangePlannerInterface $methodReturnTypeChangePlanner,
+        private readonly PropertyTypeChangePlannerInterface $propertyTypeChangePlanner,
         private readonly RetypePlanApplierInterface $retypePlanApplier,
     ) {
         $this->diagnostics = RetypeDiagnosticCollection::empty();
@@ -169,6 +172,31 @@ final class PhpRetypeTransaction
         return $this->execute($this->retyper()->planMethodReturnTypeChange(
             className: $className,
             methodName: $methodName,
+            typeNode: $typeNode,
+            docType: $docType,
+        ));
+    }
+
+    /**
+     * Plans and applies a property type change within the transaction.
+     *
+     * @param string                                                       $className     the property owner FQCN
+     * @param string|list<string>                                          $propertyNames the property name or property names without "$"
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode      the native PHP type node to write
+     * @param string|null                                                  $docType       the PHPDoc type to write in the `@var` tag
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     * @throws \LogicException           when the transaction is no longer active
+     */
+    public function changePropertyType(
+        string $className,
+        string|array $propertyNames,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+    ): RetypeResult {
+        return $this->execute($this->retyper()->planPropertyTypeChange(
+            className: $className,
+            propertyNames: $propertyNames,
             typeNode: $typeNode,
             docType: $docType,
         ));
@@ -310,6 +338,7 @@ final class PhpRetypeTransaction
             functionParameterTypeChangePlanner: $this->functionParameterTypeChangePlanner,
             functionReturnTypeChangePlanner: $this->functionReturnTypeChangePlanner,
             methodReturnTypeChangePlanner: $this->methodReturnTypeChangePlanner,
+            propertyTypeChangePlanner: $this->propertyTypeChangePlanner,
             retypePlanApplier: $this->retypePlanApplier,
         );
     }

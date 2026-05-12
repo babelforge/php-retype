@@ -12,8 +12,10 @@ The architecture follows the `php-rename` model while keeping type-specific sema
 - `FunctionParameterTypeChangeRequest`: describes a function parameter type-change intent.
 - `MethodReturnTypeChangeRequest`: describes a method return type-change intent.
 - `FunctionReturnTypeChangeRequest`: describes a function return type-change intent.
+- `PropertyTypeChangeRequest`: describes a property type-change intent.
 - `RetypePlan`: contains planned operations and diagnostics.
 - `RetypeOperation`: targets one AST node in one virtual file.
+- `PropertyRetypeOperationContext`: carries structural context needed for grouped property declaration splitting.
 - `RetypeResult`: contains the result of applying a plan.
 - `RetypeStepContext`: carries the member graph build used by one orchestrated step.
 - `RetypeStepResult`: contains the next context, applied plan, diagnostics, touched files, and graph refresh state for one step.
@@ -44,11 +46,14 @@ It exposes:
 - `changeMethodReturnType()`;
 - `planFunctionReturnTypeChange()`;
 - `changeFunctionReturnType()`;
+- `planPropertyTypeChange()`;
+- `changePropertyType()`;
 - `executeStep()`;
 - `executeStepMethodParameterTypeChange()`;
 - `executeStepFunctionParameterTypeChange()`;
 - `executeStepMethodReturnTypeChange()`;
-- `executeStepFunctionReturnTypeChange()`.
+- `executeStepFunctionReturnTypeChange()`;
+- `executeStepPropertyTypeChange()`.
 
 `Application/Contract` contains the service contracts used by the facade:
 
@@ -56,6 +61,7 @@ It exposes:
 - `FunctionParameterTypeChangePlannerInterface`;
 - `MethodReturnTypeChangePlannerInterface`;
 - `FunctionReturnTypeChangePlannerInterface`;
+- `PropertyTypeChangePlannerInterface`;
 - `RetypePlanApplierInterface`.
 
 ## Infrastructure
@@ -85,8 +91,10 @@ Current implementations:
 - `ParameterTypeNodeApplier`;
 - `MethodReturnTypeNodeApplier`;
 - `FunctionReturnTypeNodeApplier`;
+- `PropertyTypeNodeApplier`;
 - `ParameterDocblockTypeApplier`;
-- `ReturnDocblockTypeApplier`.
+- `ReturnDocblockTypeApplier`;
+- `VarDocblockTypeApplier`.
 
 ## Step Execution
 

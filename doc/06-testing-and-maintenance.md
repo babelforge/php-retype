@@ -12,11 +12,15 @@ The integration tests cover:
 - function parameter native type changes;
 - method return native type changes;
 - function return native type changes;
+- grouped property native type changes;
+- promoted property native type changes;
+- grouped property declaration splitting;
 - transaction-neutral step execution with refreshed member graph contexts;
 - step execution blocked by plan errors;
 - standalone transaction commit and rollback;
 - direct `@param` type changes;
 - direct `@return` type changes;
+- direct `@var` type changes;
 - native type removal;
 - invalid `void` parameter type rejection;
 - invalid nullable and union return type rejection.
