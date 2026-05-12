@@ -51,7 +51,7 @@ The package provides:
 - `fromDirectory()` and `fromBuild()` construction paths;
 - plan/apply APIs for property, method parameter, function parameter, method return, and function return type changes;
 - transaction-neutral step execution for external orchestrators;
-- standalone in-memory transactions with local rollback;
+- standalone transactions with local rollback and source-registry save helpers;
 - domain DTOs for plans, operations, results, step contexts, step results, and diagnostics;
 - contracts for planning and applying retype plans;
 - `member-graph` planners that convert parameter declaration matches into retype operations;
@@ -59,7 +59,7 @@ The package provides:
 - direct PHPDoc metadata updates for `@var`, `@param`, and `@return` tags;
 - basic native parameter type validation.
 
-Physical save helpers are not implemented.
+Standalone transactions expose save helpers through the source registry from the final `member-graph` build.
 
 ## Graph Freshness
 

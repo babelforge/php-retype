@@ -98,7 +98,21 @@ $result = $transaction->commit();
 
 External orchestrators such as `php-refactor` call the `executeStep...TypeChange()` methods directly instead of nesting `PhpRetypeTransaction`.
 
-`commit()` remains in-memory only. Physical file writing is still owned by the source registry available through the final member graph build.
+`commit()` remains in-memory only.
+
+Use `commitAndSave()` to commit and write every updated source file:
+
+```php
+$result = $transaction->commitAndSave();
+```
+
+Use `commitAndSaveSourceFile()` to commit and write one physical source file:
+
+```php
+$result = $transaction->commitAndSaveSourceFile('/project/src/App/Mailer.php');
+```
+
+Physical file writing is delegated to the source registry available through the final member graph build.
 
 `rollback()` restores the virtual files touched by successful transaction actions.
 

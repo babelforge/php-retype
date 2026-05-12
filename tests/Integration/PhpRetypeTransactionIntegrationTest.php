@@ -120,6 +120,92 @@ final class PhpRetypeTransactionIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures commit-and-save writes every updated physical source file.
+     */
+    public function testItCommitsAndSavesEveryUpdatedSourceFile(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+        $mailerFilePath = $srcDirectory.'/Mailer.php';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeMailerFile($mailerFilePath);
+        $this->writeMessageFile($srcDirectory.'/Message.php');
+
+        $transaction = PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        )->beginTransaction();
+
+        $transaction->changeMethodParameterType(
+            className: 'App\\Mailer',
+            methodName: 'send',
+            parameterName: 'message',
+            typeNode: new Name('Message'),
+            docType: 'Message',
+            parameterIndex: 0,
+        );
+
+        $result = $transaction->commitAndSave();
+        $contents = (string) file_get_contents($mailerFilePath);
+
+        self::assertSame(RetypeTransactionStatus::COMMITTED, $result->status);
+        self::assertStringContainsString('@param Message $message', $contents);
+        self::assertStringContainsString('public function send(\\App\\Message $message): string', $contents);
+        self::assertStringNotContainsString('@param string $message', $contents);
+    }
+
+    /**
+     * Ensures targeted commit-and-save writes only the requested physical source file.
+     */
+    public function testItCommitsAndSavesOneUpdatedSourceFile(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+        $mailerFilePath = $srcDirectory.'/Mailer.php';
+        $notifierFilePath = $srcDirectory.'/Notifier.php';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeMailerFile($mailerFilePath);
+        $this->writeNotifierFile($notifierFilePath);
+        $this->writeMessageFile($srcDirectory.'/Message.php');
+
+        $transaction = PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        )->beginTransaction();
+
+        $transaction->changeMethodParameterType(
+            className: 'App\\Mailer',
+            methodName: 'send',
+            parameterName: 'message',
+            typeNode: new Name('Message'),
+            docType: 'Message',
+            parameterIndex: 0,
+        );
+        $transaction->changeMethodParameterType(
+            className: 'App\\Notifier',
+            methodName: 'notify',
+            parameterName: 'message',
+            typeNode: new Name('Message'),
+            docType: 'Message',
+            parameterIndex: 0,
+        );
+
+        $result = $transaction->commitAndSaveSourceFile($mailerFilePath);
+        $mailerContents = (string) file_get_contents($mailerFilePath);
+        $notifierContents = (string) file_get_contents($notifierFilePath);
+
+        self::assertSame(RetypeTransactionStatus::COMMITTED, $result->status);
+        self::assertStringContainsString('public function send(\\App\\Message $message): string', $mailerContents);
+        self::assertStringNotContainsString('public function send(string $message): string', $mailerContents);
+        self::assertStringContainsString('public function notify(string $message): string', $notifierContents);
+        self::assertStringNotContainsString('public function notify(\\App\\Message $message): string', $notifierContents);
+    }
+
+    /**
      * Writes the mailer fixture.
      *
      * @param string $filePath the file path
@@ -160,6 +246,33 @@ final class PhpRetypeTransactionIntegrationTest extends TestCase
 
             final class Message
             {
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the notifier fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeNotifierFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Notifier
+            {
+                /**
+                 * @param string $message
+                 *
+                 * @return string
+                 */
+                public function notify(string $message): string
+                {
+                    return $message;
+                }
             }
             PHP);
     }

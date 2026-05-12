@@ -121,4 +121,6 @@ Transactions reuse the same step execution path as the orchestrable API, so dire
 
 `Infrastructure/PhpParser/Transaction` contains virtual-file snapshot support used by transaction rollback.
 
+`PhpRetypeTransaction::commitAndSave()` and `PhpRetypeTransaction::commitAndSaveSourceFile()` delegate physical writing to the source registry exposed by the final member graph build.
+
 Navigation: [Documentation](README.md) | [Previous: Public Usage](02-public-usage.md) | [Next: Retype Planning](04-retype-planning.md)

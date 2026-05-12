@@ -18,6 +18,7 @@ The integration tests cover:
 - transaction-neutral step execution with refreshed member graph contexts;
 - step execution blocked by plan errors;
 - standalone transaction commit and rollback;
+- standalone transaction save helpers;
 - direct `@param` type changes;
 - direct `@return` type changes;
 - direct `@var` type changes;

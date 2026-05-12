@@ -83,6 +83,8 @@ $transactionResult = $transaction->commit();
 
 Transactions refresh the in-memory member graph after each applied type change and support rollback of touched virtual files.
 
+`commit()` keeps changes in memory. Use `commitAndSave()` to write every updated source file, or `commitAndSaveSourceFile($filePath)` to write one physical file.
+
 ## Orchestrated Steps
 
 External orchestrators can execute transaction-neutral steps:

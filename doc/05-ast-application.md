@@ -96,4 +96,11 @@ Free-text descriptions are not rewritten. The implementation does not scan unrel
 
 Physical writing is performed through the source registry exposed by the final `member-graph` build.
 
+Standalone transactions expose this through:
+
+```php
+$transaction->commitAndSave();
+$transaction->commitAndSaveSourceFile('/project/src/App/Mailer.php');
+```
+
 Navigation: [Documentation](README.md) | [Previous: Retype Planning](04-retype-planning.md) | [Next: Testing And Maintenance](06-testing-and-maintenance.md)
