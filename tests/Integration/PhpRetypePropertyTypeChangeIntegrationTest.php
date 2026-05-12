@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace PhpNoobs\PhpRetype\Tests\Integration;
 
 use PhpNoobs\PhpRetype\Application\PhpRetype;
+use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
+use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
+use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
 use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
@@ -214,12 +217,47 @@ final class PhpRetypePropertyTypeChangeIntegrationTest extends TestCase
             docType: 'Transport',
         );
         $printedCode = $this->printedCode($result->virtualFiles);
+        $diagnostic = $this->firstDiagnostic($result->plan->diagnostics);
 
         self::assertCount(0, $result->plan->operations);
         self::assertTrue($result->plan->diagnostics->hasErrors());
+        self::assertNotNull($diagnostic);
+        self::assertSame(RetypeDiagnosticSeverity::ERROR, $diagnostic->severity);
+        self::assertSame('Requested properties are split across different declarations.', $diagnostic->message);
         self::assertStringContainsString('private string $transport;', $printedCode);
         self::assertStringContainsString('private string $backupTransport;', $printedCode);
         self::assertStringNotContainsString('private Transport $transport;', $printedCode);
+    }
+
+    /**
+     * Ensures missing property declarations produce a precise non-blocking diagnostic.
+     */
+    public function testItReportsMissingPropertyDeclarationDiagnostic(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeGroupedPropertyFile($srcDirectory.'/Mailer.php');
+        $this->writeTransportFile($srcDirectory.'/Transport.php');
+
+        $plan = PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        )->planPropertyTypeChange(
+            className: 'App\\Mailer',
+            propertyNames: 'missingTransport',
+            typeNode: new Name('Transport'),
+            docType: 'Transport',
+        );
+        $diagnostic = $this->firstDiagnostic($plan->diagnostics);
+
+        self::assertCount(0, $plan->operations);
+        self::assertFalse($plan->diagnostics->hasErrors());
+        self::assertNotNull($diagnostic);
+        self::assertSame(RetypeDiagnosticSeverity::WARNING, $diagnostic->severity);
+        self::assertSame('Property declaration "App\\Mailer::$missingTransport" was not found.', $diagnostic->message);
     }
 
     /**
@@ -418,6 +456,20 @@ final class PhpRetypePropertyTypeChangeIntegrationTest extends TestCase
         }
 
         return $printedCode;
+    }
+
+    /**
+     * Returns the first diagnostic from a collection.
+     *
+     * @param RetypeDiagnosticCollection $diagnostics the diagnostics to inspect
+     */
+    private function firstDiagnostic(RetypeDiagnosticCollection $diagnostics): ?RetypeDiagnostic
+    {
+        foreach ($diagnostics as $diagnostic) {
+            return $diagnostic;
+        }
+
+        return null;
     }
 
     /**
