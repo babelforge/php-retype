@@ -29,6 +29,42 @@ $retype = PhpRetype::fromBuild($build);
 
 This is the preferred integration point for future orchestration packages such as `php-refactor`.
 
+## Execute Orchestrable Retype Steps
+
+External orchestrators can use the transaction-neutral step API instead of the direct plan/apply helpers.
+
+```php
+use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepContext;
+use PhpParser\Node\Name;
+
+$context = RetypeStepContext::fromBuild($build);
+
+$step = $retype->executeStepMethodParameterTypeChange(
+    context: $context,
+    className: App\Mailer::class,
+    methodName: 'send',
+    parameterName: 'message',
+    typeNode: new Name('Message'),
+    docType: 'Message',
+    parameterIndex: 0,
+);
+
+$context = $step->context;
+```
+
+The available step methods mirror the supported direct operations:
+
+- `executeStepMethodParameterTypeChange()`;
+- `executeStepFunctionParameterTypeChange()`;
+- `executeStepMethodReturnTypeChange()`;
+- `executeStepFunctionReturnTypeChange()`.
+
+Each successful step applies the plan to virtual files and returns a refreshed `RetypeStepContext`.
+
+`php-retype` does not currently project type changes through a member-graph overlay. A type replacement can change future graph relationships, so the step executor rebuilds the current member graph from mutated virtual files after every applied step.
+
+The lower-level `executeStep()` method accepts a preplanned `RetypePlan` and a `RetypeStepContext`.
+
 ## Plan A Method Parameter Type Change
 
 Planning produces operations and diagnostics without mutating virtual files:

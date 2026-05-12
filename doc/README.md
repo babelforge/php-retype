@@ -6,7 +6,7 @@ This documentation describes the `PhpRetype` component, how to use it, how it is
 
 `PhpRetype` is a PHP refactoring library focused on safe type changes. It consumes `php-noobs/member-graph` for semantic source-node facts and uses `php-noobs/php-source-registry` virtual files for AST mutation and physical writing delegation.
 
-The package currently supports planning and applying method parameter, function parameter, method return, and function return type changes. It keeps native PHP type nodes and PHPDoc type strings as two explicit caller-provided values.
+The package currently supports planning, applying, and transaction-neutral step execution for method parameter, function parameter, method return, and function return type changes. It keeps native PHP type nodes and PHPDoc type strings as two explicit caller-provided values.
 
 ## Pages
 
@@ -30,8 +30,8 @@ The package currently supports planning and applying method parameter, function 
 
 The general rule is:
 
-- `Domain/` contains retype requests, plans, operations, results, diagnostics, target kinds, operation roles, and validation.
-- `Application/` contains the public facade and contracts for use-case services.
+- `Domain/` contains retype requests, plans, operations, results, step contexts, step results, diagnostics, target kinds, operation roles, and validation.
+- `Application/` contains the public facade, step executor, and contracts for use-case services.
 - `Infrastructure/MemberGraph/` adapts `member-graph` source-node facts into retype plans.
 - `Infrastructure/PhpParser/` applies retype plans to PHPParser AST nodes stored in virtual files.
 

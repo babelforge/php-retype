@@ -12,6 +12,8 @@ The integration tests cover:
 - function parameter native type changes;
 - method return native type changes;
 - function return native type changes;
+- transaction-neutral step execution with refreshed member graph contexts;
+- step execution blocked by plan errors;
 - direct `@param` type changes;
 - direct `@return` type changes;
 - native type removal;
@@ -50,7 +52,7 @@ When a type-change slice needs source-node facts that `member-graph` does not ex
 
 ## Graph Refresh Tests
 
-Once transactions exist, add tests proving that later actions plan against a graph rebuilt from prior type mutations.
+Step API tests must prove that later actions plan against a graph rebuilt from prior type mutations.
 
 This protects the main semantic difference between rename and retype: changing a type can change later dependency facts.
 

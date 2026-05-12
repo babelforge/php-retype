@@ -15,6 +15,8 @@ The architecture follows the `php-rename` model while keeping type-specific sema
 - `RetypePlan`: contains planned operations and diagnostics.
 - `RetypeOperation`: targets one AST node in one virtual file.
 - `RetypeResult`: contains the result of applying a plan.
+- `RetypeStepContext`: carries the member graph build used by one orchestrated step.
+- `RetypeStepResult`: contains the next context, applied plan, diagnostics, touched files, and graph refresh state for one step.
 - `RetypeDiagnostic`: reports planning or application information.
 - `RetypeDiagnosticSeverity`: identifies informational, warning, and error diagnostics.
 - `RetypeTargetKind`: identifies the kind of target being retyped.
@@ -38,7 +40,12 @@ It exposes:
 - `planMethodReturnTypeChange()`;
 - `changeMethodReturnType()`;
 - `planFunctionReturnTypeChange()`;
-- `changeFunctionReturnType()`.
+- `changeFunctionReturnType()`;
+- `executeStep()`;
+- `executeStepMethodParameterTypeChange()`;
+- `executeStepFunctionParameterTypeChange()`;
+- `executeStepMethodReturnTypeChange()`;
+- `executeStepFunctionReturnTypeChange()`.
 
 `Application/Contract` contains the service contracts used by the facade:
 
@@ -77,6 +84,21 @@ Current implementations:
 - `FunctionReturnTypeNodeApplier`;
 - `ParameterDocblockTypeApplier`;
 - `ReturnDocblockTypeApplier`.
+
+## Step Execution
+
+`Application/RetypeStepExecutor` is the transaction-neutral execution boundary used by higher-level orchestrators.
+
+It performs one step:
+
+- aggregate planning diagnostics;
+- collect touched virtual files from plan operations;
+- skip application when the plan contains errors;
+- apply the plan to the current context build;
+- aggregate application diagnostics;
+- rebuild the current member graph from mutated virtual files when operations were applied.
+
+This rebuild is intentionally stricter than the rename overlay model. A type replacement can change source-node relationships, PHPDoc facts, and future planning outcomes. Until `member-graph` exposes a dedicated type-mutation projection API, rebuilding from the changed AST is the reliable integration contract.
 
 ## Design Rule
 

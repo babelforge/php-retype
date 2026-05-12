@@ -50,14 +50,15 @@ The current implementation provides:
 - `PhpRetype` public facade;
 - `fromDirectory()` and `fromBuild()` construction paths;
 - plan/apply APIs for method parameter, function parameter, method return, and function return type changes;
-- domain DTOs for plans, operations, results, and diagnostics;
+- transaction-neutral step execution for external orchestrators;
+- domain DTOs for plans, operations, results, step contexts, step results, and diagnostics;
 - contracts for planning and applying retype plans;
 - `member-graph` planners that convert parameter declaration matches into retype operations;
 - PHPParser appliers that mutate matched parameter and function declaration nodes;
 - direct PHPDoc metadata updates for `@param` and `@return` tags;
 - basic native parameter type validation.
 
-The current implementation does not yet support properties, promoted properties, transactions, or physical save helpers.
+The current implementation does not yet support properties, promoted properties, standalone transaction helpers, or physical save helpers.
 
 ## Graph Freshness
 
@@ -72,6 +73,6 @@ Examples include:
 - structured PHPDoc types;
 - impact query results.
 
-For multi-step workflows, the graph must be considered stale after a successful type mutation until it is rebuilt from mutated virtual files.
+For multi-step workflows, the graph must be considered stale after a successful type mutation until it is rebuilt from mutated virtual files. The step API performs this rebuild for orchestrators after each applied operation.
 
 Navigation: [Documentation](README.md) | [Previous: Documentation](README.md) | [Next: Public Usage](02-public-usage.md)

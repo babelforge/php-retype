@@ -17,6 +17,8 @@ use PhpNoobs\PhpRetype\Domain\Retype\Request\FunctionParameterTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\FunctionReturnTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\MethodParameterTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\MethodReturnTypeChangeRequest;
+use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepContext;
+use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepResult;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphFunctionParameterTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphFunctionReturnTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphMethodParameterTypeChangePlanner;
@@ -42,6 +44,7 @@ final readonly class PhpRetype
      * @param FunctionReturnTypeChangePlannerInterface    $functionReturnTypeChangePlanner    the function return type change planner
      * @param MethodReturnTypeChangePlannerInterface      $methodReturnTypeChangePlanner      the method return type change planner
      * @param RetypePlanApplierInterface                  $retypePlanApplier                  the retype plan applier
+     * @param RetypeStepExecutor                          $retypeStepExecutor                 the retype step executor
      */
     private function __construct(
         private MemberDependencyGraphBuild $build,
@@ -50,6 +53,7 @@ final readonly class PhpRetype
         private FunctionReturnTypeChangePlannerInterface $functionReturnTypeChangePlanner,
         private MethodReturnTypeChangePlannerInterface $methodReturnTypeChangePlanner,
         private RetypePlanApplierInterface $retypePlanApplier,
+        private RetypeStepExecutor $retypeStepExecutor,
     ) {
     }
 
@@ -93,14 +97,150 @@ final readonly class PhpRetype
         ?MethodReturnTypeChangePlannerInterface $methodReturnTypeChangePlanner = null,
         ?RetypePlanApplierInterface $retypePlanApplier = null,
     ): self {
+        $retypePlanApplier ??= new AstRetypePlanApplier();
+
         return new self(
             build: $build,
             methodParameterTypeChangePlanner: $methodParameterTypeChangePlanner ?? new MemberGraphMethodParameterTypeChangePlanner(),
             functionParameterTypeChangePlanner: $functionParameterTypeChangePlanner ?? new MemberGraphFunctionParameterTypeChangePlanner(),
             functionReturnTypeChangePlanner: $functionReturnTypeChangePlanner ?? new MemberGraphFunctionReturnTypeChangePlanner(),
             methodReturnTypeChangePlanner: $methodReturnTypeChangePlanner ?? new MemberGraphMethodReturnTypeChangePlanner(),
-            retypePlanApplier: $retypePlanApplier ?? new AstRetypePlanApplier(),
+            retypePlanApplier: $retypePlanApplier,
+            retypeStepExecutor: new RetypeStepExecutor($retypePlanApplier),
         );
+    }
+
+    /**
+     * Executes one preplanned orchestrable retype step.
+     *
+     * @param RetypePlan        $plan    the retype plan to execute
+     * @param RetypeStepContext $context the current retype step context
+     */
+    public function executeStep(RetypePlan $plan, RetypeStepContext $context): RetypeStepResult
+    {
+        return $this->retypeStepExecutor->execute($plan, $context);
+    }
+
+    /**
+     * Executes one orchestrable method parameter type-change step.
+     *
+     * @param RetypeStepContext                                            $context        the current retype step context
+     * @param string                                                       $className      the method owner FQCN
+     * @param string                                                       $methodName     the method name
+     * @param string                                                       $parameterName  the parameter name without "$"
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode       the native PHP type node to write
+     * @param string|null                                                  $docType        the PHPDoc type to write in the `@param` tag
+     * @param int|null                                                     $parameterIndex the optional zero-based declaration index
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function executeStepMethodParameterTypeChange(
+        RetypeStepContext $context,
+        string $className,
+        string $methodName,
+        string $parameterName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+        ?int $parameterIndex = null,
+    ): RetypeStepResult {
+        return $this->executeStep($this->methodParameterTypeChangePlanner->plan(
+            request: new MethodParameterTypeChangeRequest(
+                className: $className,
+                methodName: $methodName,
+                parameterName: $parameterName,
+                typeNode: $typeNode,
+                docType: $docType,
+                parameterIndex: $parameterIndex,
+            ),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable function parameter type-change step.
+     *
+     * @param RetypeStepContext                                            $context        the current retype step context
+     * @param string                                                       $functionName   the fully-qualified function name
+     * @param string                                                       $parameterName  the parameter name without "$"
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode       the native PHP type node to write
+     * @param string|null                                                  $docType        the PHPDoc type to write in the `@param` tag
+     * @param int|null                                                     $parameterIndex the optional zero-based declaration index
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function executeStepFunctionParameterTypeChange(
+        RetypeStepContext $context,
+        string $functionName,
+        string $parameterName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+        ?int $parameterIndex = null,
+    ): RetypeStepResult {
+        return $this->executeStep($this->functionParameterTypeChangePlanner->plan(
+            request: new FunctionParameterTypeChangeRequest(
+                functionName: $functionName,
+                parameterName: $parameterName,
+                typeNode: $typeNode,
+                docType: $docType,
+                parameterIndex: $parameterIndex,
+            ),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable function return type-change step.
+     *
+     * @param RetypeStepContext                                            $context      the current retype step context
+     * @param string                                                       $functionName the fully-qualified function name
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode     the native PHP type node to write
+     * @param string|null                                                  $docType      the PHPDoc type to write in the `@return` tag
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function executeStepFunctionReturnTypeChange(
+        RetypeStepContext $context,
+        string $functionName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+    ): RetypeStepResult {
+        return $this->executeStep($this->functionReturnTypeChangePlanner->plan(
+            request: new FunctionReturnTypeChangeRequest(
+                functionName: $functionName,
+                typeNode: $typeNode,
+                docType: $docType,
+            ),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable method return type-change step.
+     *
+     * @param RetypeStepContext                                            $context    the current retype step context
+     * @param string                                                       $className  the method owner FQCN
+     * @param string                                                       $methodName the method name
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode   the native PHP type node to write
+     * @param string|null                                                  $docType    the PHPDoc type to write in the `@return` tag
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function executeStepMethodReturnTypeChange(
+        RetypeStepContext $context,
+        string $className,
+        string $methodName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+    ): RetypeStepResult {
+        return $this->executeStep($this->methodReturnTypeChangePlanner->plan(
+            request: new MethodReturnTypeChangeRequest(
+                className: $className,
+                methodName: $methodName,
+                typeNode: $typeNode,
+                docType: $docType,
+            ),
+            build: $context->currentBuild,
+        ), $context);
     }
 
     /**
