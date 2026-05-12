@@ -2,7 +2,7 @@
 
 Navigation: [Documentation](README.md) | [Previous: Testing And Maintenance](06-testing-and-maintenance.md)
 
-This page tracks which type-change operations are currently supported.
+This page lists supported type-change operations.
 
 ## Matrix
 
@@ -12,12 +12,12 @@ This page tracks which type-change operations are currently supported.
 | Function parameter | `MemberGraphSourceNodeLocator::parameter(...)` | `Param::$type` | Direct parent `@param` | Supported |
 | Method return | `MemberGraphSourceNodeLocator::method(...)` | `ClassMethod::$returnType` | Direct method `@return` | Supported |
 | Function return | `MemberGraphSourceNodeLocator::function(...)` | `Function_::$returnType` | Direct function `@return` | Supported |
-| Property | Not implemented | Not implemented | Not implemented | Planned |
-| Promoted property | Not implemented | Not implemented | Not implemented | Planned |
+| Property | Not implemented | Not implemented | Not implemented | Not implemented |
+| Promoted property | Not implemented | Not implemented | Not implemented | Not implemented |
 
 ## Supported Native Type Input
 
-Current public requests accept:
+Public requests accept:
 
 ```text
 Identifier|Name|NullableType|UnionType|IntersectionType|null
@@ -27,7 +27,7 @@ Identifier|Name|NullableType|UnionType|IntersectionType|null
 
 ## Supported PHPDoc Type Input
 
-Current public requests accept:
+Public requests accept:
 
 ```text
 string|null
@@ -37,7 +37,7 @@ string|null
 
 The caller is responsible for providing the PHPDoc representation explicitly. `PhpRetype` does not infer PHPDoc syntax from native PHP type syntax.
 
-## Current Parameter Validation
+## Parameter Validation
 
 For method and function parameters:
 

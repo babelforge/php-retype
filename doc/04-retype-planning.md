@@ -8,13 +8,13 @@ Retype planning answers one question:
 Which exact AST nodes may be changed for this type change?
 ```
 
-Planning must not mutate virtual files.
+Planning does not mutate virtual files.
 
 ## Source Of Truth
 
 `member-graph` is the only source of truth for deciding which source nodes belong to a retype operation.
 
-`PhpRetype` must not:
+`PhpRetype` does not:
 
 - perform textual search;
 - traverse unrelated AST nodes to discover extra candidates;
@@ -67,7 +67,7 @@ Only `MEMBER_DECLARATION` matches backed by `PhpParser\Node\Stmt\Function_` node
 
 ## Parameter Scope
 
-The current slice only mutates parameter declarations.
+Parameter type changes mutate parameter declarations.
 
 It deliberately ignores:
 
@@ -80,14 +80,14 @@ Those nodes are relevant to renaming, but they are not type declarations.
 
 ## Diagnostics
 
-The planner must report diagnostics instead of silently guessing.
+The planner reports diagnostics instead of silently guessing.
 
 Examples:
 
 - target parameter or function not found;
 - source node cannot be located;
 - source node role is unsupported;
-- later slices may report unsupported declaration shapes.
+- unsupported declaration shapes.
 
 Input validation happens before planning and throws `InvalidArgumentException` for invalid public inputs.
 
@@ -95,7 +95,7 @@ Input validation happens before planning and throws `InvalidArgumentException` f
 
 Planning is based on the current `MemberDependencyGraphBuild`.
 
-After a successful type mutation, that build may no longer describe the current code accurately. Later type-change planning in the same workflow should use a fresh in-memory build from mutated virtual files.
+After a successful type mutation, that build may no longer describe the current code accurately. Later type-change planning in the same workflow uses a fresh in-memory build from mutated virtual files.
 
 This matters because changing type declarations or PHPDoc can change downstream member relationships and expression resolution.
 

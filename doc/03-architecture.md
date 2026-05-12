@@ -25,7 +25,7 @@ The architecture follows the `php-rename` model while keeping type-specific sema
 - `RetypeOperationRole`: identifies why a node is part of the plan.
 - `RetypeInputValidator`: validates public inputs before planning.
 
-Domain objects should stay independent from orchestration logic.
+Domain objects are independent from orchestration logic.
 
 ## Application
 
@@ -64,7 +64,7 @@ It exposes:
 
 `Infrastructure/PhpParser` applies retype operations to PHPParser AST nodes stored in virtual files.
 
-Infrastructure code can depend on external packages. Domain objects should remain simple and explicit.
+Infrastructure code depends on external packages. Domain objects remain simple and explicit.
 
 ## Retype Application
 
@@ -101,7 +101,7 @@ It performs one step:
 - aggregate application diagnostics;
 - rebuild the current member graph from mutated virtual files when operations were applied.
 
-This rebuild is intentionally stricter than the rename overlay model. A type replacement can change source-node relationships, PHPDoc facts, and future planning outcomes. Until `member-graph` exposes a dedicated type-mutation projection API, rebuilding from the changed AST is the reliable integration contract.
+This rebuild is stricter than the rename overlay model. A type replacement can change source-node relationships, PHPDoc facts, and later planning outcomes, so rebuilding from the changed AST is the integration contract.
 
 ## Transactions
 
@@ -112,11 +112,5 @@ Transactions reuse the same step execution path as the orchestrable API, so dire
 `RetypeStepExecutor` is transaction-neutral. It never snapshots or rolls back virtual files. Snapshot ownership belongs either to `PhpRetypeTransaction` for local usage or to an external orchestrator such as `php-refactor` for cross-service workflows.
 
 `Infrastructure/PhpParser/Transaction` contains virtual-file snapshot support used by transaction rollback.
-
-## Design Rule
-
-Do not add a broad refactoring abstraction before the method parameter type-change path is proven.
-
-The package should grow from concrete safe type-change workflows, then generalize only when duplication becomes real.
 
 Navigation: [Documentation](README.md) | [Previous: Public Usage](02-public-usage.md) | [Next: Retype Planning](04-retype-planning.md)

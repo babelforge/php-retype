@@ -4,9 +4,9 @@ Navigation: [Documentation](README.md) | [Previous: Retype Planning](04-retype-p
 
 AST application mutates virtual PHP files in memory from a `RetypePlan`.
 
-It does not write physical files directly. Future save helpers should delegate physical writing to `php-source-registry`.
+It does not write physical files directly. Physical writing is delegated to `php-source-registry` through the source registry exposed by the `member-graph` build.
 
-The applier must not discover retype targets. It only mutates nodes already present in the retype plan.
+The applier does not discover retype targets. It only mutates nodes already present in the retype plan.
 
 ## Input
 
@@ -32,11 +32,11 @@ The applier returns a `RetypeResult` containing:
 - the virtual files after mutation;
 - application diagnostics.
 
-## Current Implementation
+## Implementation
 
 Plans containing error diagnostics are not applied.
 
-`AstRetypePlanApplier` currently supports method and function parameter type changes for:
+`AstRetypePlanApplier` supports method and function parameter type changes for:
 
 - `PhpParser\Node\Param`.
 
@@ -57,7 +57,7 @@ Unsupported target kinds or node types produce diagnostics instead of triggering
 
 Docblock mutation is implemented as metadata application after a node mutation succeeds.
 
-Current supported parameter docblock references:
+Supported parameter docblock references:
 
 ```php
 @param OldType $parameterName
@@ -65,7 +65,7 @@ Current supported parameter docblock references:
 
 The supported `@param` tag type is rewritten only on the direct method or function docblock of a matched parameter declaration.
 
-Current supported return docblock references:
+Supported return docblock references:
 
 ```php
 @return OldType
@@ -77,15 +77,6 @@ Free-text descriptions are not rewritten. The implementation does not scan unrel
 
 ## Physical Writing
 
-Physical writing is not implemented in `php-retype` yet.
-
-The future model should mirror `php-rename`:
-
-```php
-$transaction->commitAndSave();
-$transaction->commitAndSaveSourceFile('/project/src/App/Mailer.php');
-```
-
-Those helpers should delegate physical writing to the source registry exposed by the final `member-graph` build.
+Physical writing is performed through the source registry exposed by the final `member-graph` build.
 
 Navigation: [Documentation](README.md) | [Previous: Retype Planning](04-retype-planning.md) | [Next: Testing And Maintenance](06-testing-and-maintenance.md)

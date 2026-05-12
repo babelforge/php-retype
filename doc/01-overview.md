@@ -2,7 +2,7 @@
 
 Navigation: [Documentation](README.md) | [Previous: Documentation](README.md) | [Next: Public Usage](02-public-usage.md)
 
-`PhpRetype` is designed as a small specialized library, not as a general refactoring framework.
+`PhpRetype` is a specialized type refactoring library, not a general refactoring framework.
 
 Its responsibility is to change PHP type contracts safely by combining:
 
@@ -43,9 +43,9 @@ The caller provides:
 
 `PhpRetype` does not infer one representation from the other in the current implementation.
 
-## Current Status
+## Status
 
-The current implementation provides:
+The package provides:
 
 - `PhpRetype` public facade;
 - `fromDirectory()` and `fromBuild()` construction paths;
@@ -59,11 +59,11 @@ The current implementation provides:
 - direct PHPDoc metadata updates for `@param` and `@return` tags;
 - basic native parameter type validation.
 
-The current implementation does not yet support properties, promoted properties, or physical save helpers.
+Properties, promoted properties, and physical save helpers are not implemented.
 
 ## Graph Freshness
 
-A type change can alter future member relationships and expression resolution.
+A type change can alter later member relationships and expression resolution.
 
 Examples include:
 

@@ -2,9 +2,9 @@
 
 Navigation: [Documentation](README.md) | [Previous: AST Application](05-ast-application.md) | [Next: Supported Retype Matrix](07-supported-retype-matrix.md)
 
-Tests should stay focused on the package boundary: planning from `member-graph` facts and applying explicit AST mutations.
+Tests focus on the package boundary: planning from `member-graph` facts and applying explicit AST mutations.
 
-## Current Test Coverage
+## Test Coverage
 
 The integration tests cover:
 
@@ -49,11 +49,11 @@ When adding a new type-change slice:
 - add integration tests that prove virtual files are marked updated;
 - document the new slice in the supported matrix.
 
-When a type-change slice needs source-node facts that `member-graph` does not expose, do not build a local semantic scanner. Create an upstream request for `member-graph` and pause.
+When a type-change slice needs source-node facts that `member-graph` does not expose, the implementation uses an upstream `member-graph` capability instead of a local semantic scanner.
 
 ## Graph Refresh Tests
 
-Step API tests must prove that later actions plan against a graph rebuilt from prior type mutations.
+Step API tests prove that later actions plan against a graph rebuilt from prior type mutations.
 
 This protects the main semantic difference between rename and retype: changing a type can change later dependency facts.
 

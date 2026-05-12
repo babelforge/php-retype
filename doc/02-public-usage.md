@@ -2,11 +2,11 @@
 
 Navigation: [Documentation](README.md) | [Previous: Overview](01-overview.md) | [Next: Architecture](03-architecture.md)
 
-The public API should remain small and composable.
+The public API is small and composable.
 
 ## Create From Directories
 
-Use this mode when `PhpRetype` should build its own `member-graph` input:
+Use this mode when `PhpRetype` builds its own `member-graph` input:
 
 ```php
 use PhpNoobs\PhpRetype\Application\PhpRetype;
@@ -27,7 +27,7 @@ use PhpNoobs\PhpRetype\Application\PhpRetype;
 $retype = PhpRetype::fromBuild($build);
 ```
 
-This is the preferred integration point for future orchestration packages such as `php-refactor`.
+This is the integration point for orchestration packages such as `php-refactor`.
 
 ## Execute Orchestrable Retype Steps
 
@@ -61,7 +61,7 @@ The available step methods mirror the supported direct operations:
 
 Each successful step applies the plan to virtual files and returns a refreshed `RetypeStepContext`.
 
-`php-retype` does not currently project type changes through a member-graph overlay. A type replacement can change future graph relationships, so the step executor rebuilds the current member graph from mutated virtual files after every applied step.
+`php-retype` rebuilds the current member graph from mutated virtual files after every applied step. This keeps later steps aligned with type replacements that change graph relationships.
 
 The lower-level `executeStep()` method accepts a preplanned `RetypePlan` and a `RetypeStepContext`.
 
@@ -95,7 +95,7 @@ $result = $transaction->commit();
 
 `PhpRetypeTransaction` is the local transaction wrapper for standalone `php-retype` usage. It uses the same step execution path as external orchestration, but adds local snapshots, local rollback, local status transitions, and aggregate transaction results.
 
-An external orchestrator such as `php-refactor` should call the `executeStep...TypeChange()` methods directly instead of nesting `PhpRetypeTransaction`.
+External orchestrators such as `php-refactor` call the `executeStep...TypeChange()` methods directly instead of nesting `PhpRetypeTransaction`.
 
 `commit()` remains in-memory only. Physical file writing is still owned by the source registry available through the final member graph build.
 
@@ -137,7 +137,7 @@ $result = $retype->changeMethodParameterType(
 );
 ```
 
-The current implementation mutates the matched `PhpParser\Node\Param` native type and the direct parent function-like `@param` tag when `docType` is provided.
+The operation mutates the matched `PhpParser\Node\Param` native type and the direct parent function-like `@param` tag when `docType` is provided.
 
 ## Plan A Function Parameter Type Change
 
@@ -171,7 +171,7 @@ $result = $retype->changeFunctionParameterType(
 );
 ```
 
-The current implementation mutates the matched function `PhpParser\Node\Param` native type and the direct function `@param` tag when `docType` is provided.
+The operation mutates the matched function `PhpParser\Node\Param` native type and the direct function `@param` tag when `docType` is provided.
 
 ## Plan A Method Return Type Change
 
@@ -203,7 +203,7 @@ $result = $retype->changeMethodReturnType(
 );
 ```
 
-The current implementation mutates the matched `PhpParser\Node\Stmt\ClassMethod` return type and the direct method `@return` tag when `docType` is provided.
+The operation mutates the matched `PhpParser\Node\Stmt\ClassMethod` return type and the direct method `@return` tag when `docType` is provided.
 
 ## Plan A Function Return Type Change
 
@@ -233,7 +233,7 @@ $result = $retype->changeFunctionReturnType(
 );
 ```
 
-The current implementation mutates the matched `PhpParser\Node\Stmt\Function_` return type and the direct function `@return` tag when `docType` is provided.
+The operation mutates the matched `PhpParser\Node\Stmt\Function_` return type and the direct function `@return` tag when `docType` is provided.
 
 ## Remove A Native Type
 
