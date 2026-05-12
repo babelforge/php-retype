@@ -65,6 +65,42 @@ Each successful step applies the plan to virtual files and returns a refreshed `
 
 The lower-level `executeStep()` method accepts a preplanned `RetypePlan` and a `RetypeStepContext`.
 
+## Use A Retype Transaction
+
+Standalone callers can use a local transaction wrapper when several type changes must share refreshed in-memory graph state:
+
+```php
+use PhpParser\Node\Name;
+
+$transaction = $retype->beginTransaction();
+
+$transaction->changeMethodParameterType(
+    className: App\Mailer::class,
+    methodName: 'send',
+    parameterName: 'message',
+    typeNode: new Name('Message'),
+    docType: 'Message',
+    parameterIndex: 0,
+);
+
+$transaction->changeMethodReturnType(
+    className: App\Mailer::class,
+    methodName: 'send',
+    typeNode: new Name('SendResult'),
+    docType: 'SendResult',
+);
+
+$result = $transaction->commit();
+```
+
+`PhpRetypeTransaction` is the local transaction wrapper for standalone `php-retype` usage. It uses the same step execution path as external orchestration, but adds local snapshots, local rollback, local status transitions, and aggregate transaction results.
+
+An external orchestrator such as `php-refactor` should call the `executeStep...TypeChange()` methods directly instead of nesting `PhpRetypeTransaction`.
+
+`commit()` remains in-memory only. Physical file writing is still owned by the source registry available through the final member graph build.
+
+`rollback()` restores the virtual files touched by successful transaction actions.
+
 ## Plan A Method Parameter Type Change
 
 Planning produces operations and diagnostics without mutating virtual files:

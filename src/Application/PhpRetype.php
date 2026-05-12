@@ -111,6 +111,21 @@ final readonly class PhpRetype
     }
 
     /**
+     * Starts a retype transaction from the current member graph build.
+     */
+    public function beginTransaction(): PhpRetypeTransaction
+    {
+        return new PhpRetypeTransaction(
+            currentBuild: $this->build,
+            methodParameterTypeChangePlanner: $this->methodParameterTypeChangePlanner,
+            functionParameterTypeChangePlanner: $this->functionParameterTypeChangePlanner,
+            functionReturnTypeChangePlanner: $this->functionReturnTypeChangePlanner,
+            methodReturnTypeChangePlanner: $this->methodReturnTypeChangePlanner,
+            retypePlanApplier: $this->retypePlanApplier,
+        );
+    }
+
+    /**
      * Executes one preplanned orchestrable retype step.
      *
      * @param RetypePlan        $plan    the retype plan to execute

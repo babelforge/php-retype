@@ -17,6 +17,8 @@ The architecture follows the `php-rename` model while keeping type-specific sema
 - `RetypeResult`: contains the result of applying a plan.
 - `RetypeStepContext`: carries the member graph build used by one orchestrated step.
 - `RetypeStepResult`: contains the next context, applied plan, diagnostics, touched files, and graph refresh state for one step.
+- `RetypeTransactionStatus`: identifies transaction lifecycle state.
+- `RetypeTransactionResult`: aggregates transaction action results, final build, final virtual files, and diagnostics.
 - `RetypeDiagnostic`: reports planning or application information.
 - `RetypeDiagnosticSeverity`: identifies informational, warning, and error diagnostics.
 - `RetypeTargetKind`: identifies the kind of target being retyped.
@@ -33,6 +35,7 @@ It exposes:
 
 - `fromDirectory()`;
 - `fromBuild()`;
+- `beginTransaction()`;
 - `planMethodParameterTypeChange()`;
 - `changeMethodParameterType()`;
 - `planFunctionParameterTypeChange()`;
@@ -99,6 +102,16 @@ It performs one step:
 - rebuild the current member graph from mutated virtual files when operations were applied.
 
 This rebuild is intentionally stricter than the rename overlay model. A type replacement can change source-node relationships, PHPDoc facts, and future planning outcomes. Until `member-graph` exposes a dedicated type-mutation projection API, rebuilding from the changed AST is the reliable integration contract.
+
+## Transactions
+
+`Application/PhpRetypeTransaction` mirrors the direct type-change methods and maintains a refreshed member graph build during a standalone transaction.
+
+Transactions reuse the same step execution path as the orchestrable API, so direct transaction calls and external orchestration calls keep the same planning, application, diagnostics, and graph-refresh behavior.
+
+`RetypeStepExecutor` is transaction-neutral. It never snapshots or rolls back virtual files. Snapshot ownership belongs either to `PhpRetypeTransaction` for local usage or to an external orchestrator such as `php-refactor` for cross-service workflows.
+
+`Infrastructure/PhpParser/Transaction` contains virtual-file snapshot support used by transaction rollback.
 
 ## Design Rule
 

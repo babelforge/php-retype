@@ -14,6 +14,7 @@ The integration tests cover:
 - function return native type changes;
 - transaction-neutral step execution with refreshed member graph contexts;
 - step execution blocked by plan errors;
+- standalone transaction commit and rollback;
 - direct `@param` type changes;
 - direct `@return` type changes;
 - native type removal;

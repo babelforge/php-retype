@@ -51,6 +51,7 @@ The current implementation provides:
 - `fromDirectory()` and `fromBuild()` construction paths;
 - plan/apply APIs for method parameter, function parameter, method return, and function return type changes;
 - transaction-neutral step execution for external orchestrators;
+- standalone in-memory transactions with local rollback;
 - domain DTOs for plans, operations, results, step contexts, step results, and diagnostics;
 - contracts for planning and applying retype plans;
 - `member-graph` planners that convert parameter declaration matches into retype operations;
@@ -58,7 +59,7 @@ The current implementation provides:
 - direct PHPDoc metadata updates for `@param` and `@return` tags;
 - basic native parameter type validation.
 
-The current implementation does not yet support properties, promoted properties, standalone transaction helpers, or physical save helpers.
+The current implementation does not yet support properties, promoted properties, or physical save helpers.
 
 ## Graph Freshness
 
