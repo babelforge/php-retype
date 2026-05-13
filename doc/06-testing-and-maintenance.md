@@ -18,6 +18,10 @@ The integration tests cover:
 - class constant native type and direct `@var` changes;
 - grouped class constant declaration splitting;
 - enum backing type changes;
+- closure parameter and return type changes inside methods;
+- arrow-function parameter and return type changes inside functions;
+- file-level nested callable type changes without exposing virtual files;
+- missing nested callable index diagnostics;
 - transaction-neutral step execution with refreshed member graph contexts;
 - step execution blocked by plan errors;
 - standalone transaction commit and rollback;
@@ -62,8 +66,8 @@ When a type-change slice needs source-node facts that `member-graph` does not ex
 
 Current backlog:
 
-- closure parameter and closure return type changes;
-- arrow function parameter and arrow function return type changes.
+- broader edge-case coverage for deeply nested closure and arrow-function indexes;
+- public orchestration exposure in downstream transaction packages.
 
 ## Graph Refresh Tests
 

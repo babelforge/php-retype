@@ -17,10 +17,10 @@ This page lists supported type-change operations.
 | Class constant | `MemberGraphSourceNodeLocator::classConstant(...)` | `ClassConst::$type` | Direct `@var` owner | Supported |
 | Enum backing type | `MemberGraphSourceNodeLocator::owner(...)` | `Enum_::$scalarType` | Not applicable | Supported |
 | Namespace/global constant | Not applicable | Not supported by PHP native syntax | Not applicable | Not supported |
-| Closure parameter | TODO | TODO | TODO | TODO |
-| Closure return | TODO | TODO | TODO | TODO |
-| Arrow function parameter | TODO | TODO | TODO | TODO |
-| Arrow function return | TODO | TODO | TODO | TODO |
+| Closure parameter | Container + zero-based DFS index | `Param::$type` | Direct attached `@param` | Supported |
+| Closure return | Container + zero-based DFS index | `Closure::$returnType` | Direct attached `@return` | Supported |
+| Arrow function parameter | Container + zero-based DFS index | `Param::$type` | Direct attached `@param` | Supported |
+| Arrow function return | Container + zero-based DFS index | `ArrowFunction::$returnType` | Direct attached `@return` | Supported |
 
 ## Supported Native Type Input
 
@@ -78,6 +78,14 @@ For class constants:
 For enum backing types:
 
 - only `int` and `string` are accepted.
+
+For closures and arrow functions:
+
+- callable indexes must be zero or positive;
+- parameter targets reject `void` and `never`;
+- return targets follow method and function return validation;
+- method and function containers are resolved from `member-graph`;
+- file containers are resolved from the current build virtual files.
 
 For method and function returns:
 

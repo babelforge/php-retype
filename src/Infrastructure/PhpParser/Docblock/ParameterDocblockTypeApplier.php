@@ -10,6 +10,8 @@ use PhpNoobs\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeApplicationContext;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeMetadataApplierInterface;
 use PhpParser\Comment\Doc;
+use PhpParser\Node\Expr\ArrowFunction;
+use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -30,6 +32,8 @@ final readonly class ParameterDocblockTypeApplier implements RetypeMetadataAppli
         return (
             RetypeTargetKind::METHOD_PARAMETER === $operation->targetKind
             || RetypeTargetKind::FUNCTION_PARAMETER === $operation->targetKind
+            || RetypeTargetKind::CLOSURE_PARAMETER === $operation->targetKind
+            || RetypeTargetKind::ARROW_FUNCTION_PARAMETER === $operation->targetKind
         )
             && RetypeOperationRole::DECLARATION === $operation->role
             && $operation->node instanceof Param
@@ -84,11 +88,11 @@ final readonly class ParameterDocblockTypeApplier implements RetypeMetadataAppli
      *
      * @param Param $parameter the parameter declaration node
      */
-    private function functionLikeParent(Param $parameter): ClassMethod|Function_|null
+    private function functionLikeParent(Param $parameter): ClassMethod|Function_|Closure|ArrowFunction|null
     {
         $parent = $parameter->getAttribute('parent');
 
-        if ($parent instanceof ClassMethod || $parent instanceof Function_) {
+        if ($parent instanceof ClassMethod || $parent instanceof Function_ || $parent instanceof Closure || $parent instanceof ArrowFunction) {
             return $parent;
         }
 

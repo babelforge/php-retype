@@ -12,6 +12,7 @@ use PhpNoobs\PhpRetype\Application\Contract\FunctionParameterTypeChangePlannerIn
 use PhpNoobs\PhpRetype\Application\Contract\FunctionReturnTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\MethodParameterTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\MethodReturnTypeChangePlannerInterface;
+use PhpNoobs\PhpRetype\Application\Contract\NestedCallableTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\PropertyTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\RetypePlanApplierInterface;
 use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
@@ -31,6 +32,7 @@ use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphFunctionPar
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphFunctionReturnTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphMethodParameterTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphMethodReturnTypeChangePlanner;
+use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphNestedCallableTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphPropertyTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\AstRetypePlanApplier;
 use PhpParser\Node\Identifier;
@@ -44,6 +46,8 @@ use PhpParser\Node\UnionType;
  */
 final readonly class PhpRetype
 {
+    use NestedCallablePhpRetypeMethods;
+
     /**
      * Constructor.
      *
@@ -55,6 +59,7 @@ final readonly class PhpRetype
      * @param PropertyTypeChangePlannerInterface          $propertyTypeChangePlanner          the property type change planner
      * @param ClassConstantTypeChangePlannerInterface     $classConstantTypeChangePlanner     the class constant type change planner
      * @param EnumBackingTypeChangePlannerInterface       $enumBackingTypeChangePlanner       the enum backing type change planner
+     * @param NestedCallableTypeChangePlannerInterface    $nestedCallableTypeChangePlanner    the nested callable type change planner
      * @param RetypePlanApplierInterface                  $retypePlanApplier                  the retype plan applier
      * @param RetypeStepExecutor                          $retypeStepExecutor                 the retype step executor
      */
@@ -67,6 +72,7 @@ final readonly class PhpRetype
         private PropertyTypeChangePlannerInterface $propertyTypeChangePlanner,
         private ClassConstantTypeChangePlannerInterface $classConstantTypeChangePlanner,
         private EnumBackingTypeChangePlannerInterface $enumBackingTypeChangePlanner,
+        private NestedCallableTypeChangePlannerInterface $nestedCallableTypeChangePlanner,
         private RetypePlanApplierInterface $retypePlanApplier,
         private RetypeStepExecutor $retypeStepExecutor,
     ) {
@@ -105,6 +111,7 @@ final readonly class PhpRetype
      * @param PropertyTypeChangePlannerInterface|null          $propertyTypeChangePlanner          the optional property type change planner override
      * @param ClassConstantTypeChangePlannerInterface|null     $classConstantTypeChangePlanner     the optional class constant type change planner override
      * @param EnumBackingTypeChangePlannerInterface|null       $enumBackingTypeChangePlanner       the optional enum backing type change planner override
+     * @param NestedCallableTypeChangePlannerInterface|null    $nestedCallableTypeChangePlanner    the optional nested callable type change planner override
      * @param RetypePlanApplierInterface|null                  $retypePlanApplier                  the optional retype plan applier override
      */
     public static function fromBuild(
@@ -116,6 +123,7 @@ final readonly class PhpRetype
         ?PropertyTypeChangePlannerInterface $propertyTypeChangePlanner = null,
         ?ClassConstantTypeChangePlannerInterface $classConstantTypeChangePlanner = null,
         ?EnumBackingTypeChangePlannerInterface $enumBackingTypeChangePlanner = null,
+        ?NestedCallableTypeChangePlannerInterface $nestedCallableTypeChangePlanner = null,
         ?RetypePlanApplierInterface $retypePlanApplier = null,
     ): self {
         $retypePlanApplier ??= new AstRetypePlanApplier();
@@ -129,6 +137,7 @@ final readonly class PhpRetype
             propertyTypeChangePlanner: $propertyTypeChangePlanner ?? new MemberGraphPropertyTypeChangePlanner(),
             classConstantTypeChangePlanner: $classConstantTypeChangePlanner ?? new MemberGraphClassConstantTypeChangePlanner(),
             enumBackingTypeChangePlanner: $enumBackingTypeChangePlanner ?? new MemberGraphEnumBackingTypeChangePlanner(),
+            nestedCallableTypeChangePlanner: $nestedCallableTypeChangePlanner ?? new MemberGraphNestedCallableTypeChangePlanner(),
             retypePlanApplier: $retypePlanApplier,
             retypeStepExecutor: new RetypeStepExecutor($retypePlanApplier),
         );
@@ -148,6 +157,7 @@ final readonly class PhpRetype
             propertyTypeChangePlanner: $this->propertyTypeChangePlanner,
             classConstantTypeChangePlanner: $this->classConstantTypeChangePlanner,
             enumBackingTypeChangePlanner: $this->enumBackingTypeChangePlanner,
+            nestedCallableTypeChangePlanner: $this->nestedCallableTypeChangePlanner,
             retypePlanApplier: $this->retypePlanApplier,
         );
     }

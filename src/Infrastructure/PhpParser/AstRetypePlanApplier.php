@@ -15,6 +15,7 @@ use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypeResult;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeApplicationContext;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeMetadataApplierInterface;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeNodeApplierInterface;
+use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Callable_\CallableReturnTypeNodeApplier;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\ClassConstant\ClassConstantTypeNodeApplier;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Docblock\ParameterDocblockTypeApplier;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Docblock\ReturnDocblockTypeApplier;
@@ -58,6 +59,7 @@ final readonly class AstRetypePlanApplier implements RetypePlanApplierInterface
             new PropertyTypeNodeApplier(),
             new ClassConstantTypeNodeApplier(),
             new EnumBackingTypeNodeApplier(),
+            new CallableReturnTypeNodeApplier(),
         ];
         $this->metadataAppliers = $metadataAppliers ?? [
             new ParameterDocblockTypeApplier(),

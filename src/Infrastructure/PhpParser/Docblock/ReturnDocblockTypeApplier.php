@@ -10,6 +10,8 @@ use PhpNoobs\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeApplicationContext;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeMetadataApplierInterface;
 use PhpParser\Comment\Doc;
+use PhpParser\Node\Expr\ArrowFunction;
+use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 
@@ -28,9 +30,16 @@ final readonly class ReturnDocblockTypeApplier implements RetypeMetadataApplierI
         return (
             RetypeTargetKind::FUNCTION_RETURN === $operation->targetKind
             || RetypeTargetKind::METHOD_RETURN === $operation->targetKind
+            || RetypeTargetKind::CLOSURE_RETURN === $operation->targetKind
+            || RetypeTargetKind::ARROW_FUNCTION_RETURN === $operation->targetKind
         )
             && RetypeOperationRole::DECLARATION === $operation->role
-            && ($operation->node instanceof Function_ || $operation->node instanceof ClassMethod)
+            && (
+                $operation->node instanceof Function_
+                || $operation->node instanceof ClassMethod
+                || $operation->node instanceof Closure
+                || $operation->node instanceof ArrowFunction
+            )
             && null !== $operation->docType;
     }
 
@@ -42,7 +51,15 @@ final readonly class ReturnDocblockTypeApplier implements RetypeMetadataApplierI
      */
     public function apply(RetypeOperation $operation, RetypeApplicationContext $context): void
     {
-        if ((!$operation->node instanceof Function_ && !$operation->node instanceof ClassMethod) || null === $operation->docType) {
+        if (
+            (
+                !$operation->node instanceof Function_
+                && !$operation->node instanceof ClassMethod
+                && !$operation->node instanceof Closure
+                && !$operation->node instanceof ArrowFunction
+            )
+            || null === $operation->docType
+        ) {
             return;
         }
 

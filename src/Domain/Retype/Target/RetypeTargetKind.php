@@ -16,4 +16,8 @@ enum RetypeTargetKind: string
     case PROPERTY = 'property';
     case CLASS_CONSTANT = 'class_constant';
     case ENUM_BACKING = 'enum_backing';
+    case CLOSURE_PARAMETER = 'closure_parameter';
+    case CLOSURE_RETURN = 'closure_return';
+    case ARROW_FUNCTION_PARAMETER = 'arrow_function_parameter';
+    case ARROW_FUNCTION_RETURN = 'arrow_function_return';
 }

@@ -100,6 +100,16 @@ $matches = MemberGraphSourceNodeLocator::fromBuild($build)
 
 Only `OWNER_DECLARATION` matches backed by `PhpParser\Node\Stmt\Enum_` nodes are converted to retype operations.
 
+For closure and arrow-function type changes, planning first resolves a public container:
+
+- method containers use `MemberGraphSourceNodeLocator::method(...)`;
+- function containers use `MemberGraphSourceNodeLocator::function(...)`;
+- file containers match the current build virtual files by physical file path or virtual file path.
+
+Inside the resolved container, `php-retype` selects the requested closure or arrow function by zero-based DFS index. The index is computed before mutation.
+
+Parameter targets convert the selected nested callable parameter to a retype operation. Return targets convert the selected `Closure` or `ArrowFunction` node to a retype operation.
+
 ## Parameter Scope
 
 Parameter type changes mutate parameter declarations.
@@ -109,6 +119,8 @@ Property type changes mutate property declarations. Grouped property declaration
 Class constant type changes mutate class constant declarations. Grouped class constant declarations are split when only part of the group is targeted.
 
 Enum backing type changes mutate the enum declaration scalar type.
+
+Closure and arrow-function type changes mutate only the selected nested callable parameter or return slot.
 
 It deliberately ignores:
 

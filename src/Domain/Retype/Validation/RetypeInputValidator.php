@@ -69,6 +69,21 @@ final readonly class RetypeInputValidator
     }
 
     /**
+     * Validates a zero-based index.
+     *
+     * @param int    $value the index
+     * @param string $name  the input name
+     *
+     * @throws \InvalidArgumentException when the index is negative
+     */
+    public static function guardNonNegativeIndex(int $value, string $name): void
+    {
+        if (0 > $value) {
+            throw new \InvalidArgumentException(sprintf('The "%s" retype input must be greater than or equal to zero.', $name));
+        }
+    }
+
+    /**
      * Validates an optional PHPDoc type string.
      *
      * @param string|null $value the optional PHPDoc type

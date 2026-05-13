@@ -12,6 +12,7 @@ use PhpNoobs\PhpRetype\Application\Contract\FunctionParameterTypeChangePlannerIn
 use PhpNoobs\PhpRetype\Application\Contract\FunctionReturnTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\MethodParameterTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\MethodReturnTypeChangePlannerInterface;
+use PhpNoobs\PhpRetype\Application\Contract\NestedCallableTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\PropertyTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\RetypePlanApplierInterface;
 use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
@@ -35,6 +36,8 @@ use PhpParser\Node\UnionType;
  */
 final class PhpRetypeTransaction
 {
+    use NestedCallablePhpRetypeTransactionMethods;
+
     /**
      * @var list<RetypeResult>
      */
@@ -60,6 +63,7 @@ final class PhpRetypeTransaction
      * @param PropertyTypeChangePlannerInterface          $propertyTypeChangePlanner          the property type-change planner
      * @param ClassConstantTypeChangePlannerInterface     $classConstantTypeChangePlanner     the class constant type-change planner
      * @param EnumBackingTypeChangePlannerInterface       $enumBackingTypeChangePlanner       the enum backing type-change planner
+     * @param NestedCallableTypeChangePlannerInterface    $nestedCallableTypeChangePlanner    the nested callable type-change planner
      * @param RetypePlanApplierInterface                  $retypePlanApplier                  the retype plan applier
      */
     public function __construct(
@@ -71,6 +75,7 @@ final class PhpRetypeTransaction
         private readonly PropertyTypeChangePlannerInterface $propertyTypeChangePlanner,
         private readonly ClassConstantTypeChangePlannerInterface $classConstantTypeChangePlanner,
         private readonly EnumBackingTypeChangePlannerInterface $enumBackingTypeChangePlanner,
+        private readonly NestedCallableTypeChangePlannerInterface $nestedCallableTypeChangePlanner,
         private readonly RetypePlanApplierInterface $retypePlanApplier,
     ) {
         $this->diagnostics = RetypeDiagnosticCollection::empty();
@@ -423,6 +428,7 @@ final class PhpRetypeTransaction
             propertyTypeChangePlanner: $this->propertyTypeChangePlanner,
             classConstantTypeChangePlanner: $this->classConstantTypeChangePlanner,
             enumBackingTypeChangePlanner: $this->enumBackingTypeChangePlanner,
+            nestedCallableTypeChangePlanner: $this->nestedCallableTypeChangePlanner,
             retypePlanApplier: $this->retypePlanApplier,
         );
     }

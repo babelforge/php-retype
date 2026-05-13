@@ -70,6 +70,17 @@ It supports enum backing type changes for:
 
 The enum scalar type is replaced with a clone of the caller-provided `Identifier`. PHP only supports `int` and `string` backed enum scalar types.
 
+It supports closure and arrow-function parameter changes for:
+
+- nested callable `PhpParser\Node\Param` nodes.
+
+It supports closure and arrow-function return changes for:
+
+- `PhpParser\Node\Expr\Closure`;
+- `PhpParser\Node\Expr\ArrowFunction`.
+
+The nested callable return type is replaced with a clone of the caller-provided type node, or removed when `typeNode` is `null`.
+
 After successful node mutation, each touched `VirtualPhpSourceFile` is marked as updated through `VirtualPhpSourceFile::update()`.
 
 Unsupported target kinds or node types produce diagnostics instead of triggering fallback source inspection.
@@ -103,6 +114,8 @@ Supported property docblock references:
 The supported `@var` tag type is rewritten only on the direct property or promoted-property docblock owner reported by `member-graph`.
 
 Class constant docblocks use the same direct `@var` form and are rewritten only on the matched class constant declaration.
+
+Closure and arrow-function docblocks use direct `@param` and `@return` forms when the PHPParser node carries an attached doc comment. If no doc comment is attached to the nested callable node, no PHPDoc mutation is performed.
 
 Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 

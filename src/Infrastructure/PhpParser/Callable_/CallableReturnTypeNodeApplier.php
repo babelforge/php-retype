@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Infrastructure\PhpParser\Parameter;
+namespace PhpNoobs\PhpRetype\Infrastructure\PhpParser\Callable_;
 
 use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
 use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
@@ -10,12 +10,13 @@ use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperation;
 use PhpNoobs\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeApplicationContext;
 use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeNodeApplierInterface;
-use PhpParser\Node\Param;
+use PhpParser\Node\Expr\ArrowFunction;
+use PhpParser\Node\Expr\Closure;
 
 /**
- * Applies parameter type changes to parameter declaration nodes.
+ * Applies closure and arrow-function return type changes.
  */
-final readonly class ParameterTypeNodeApplier implements RetypeNodeApplierInterface
+final readonly class CallableReturnTypeNodeApplier implements RetypeNodeApplierInterface
 {
     /**
      * Indicates whether this applier supports the retype operation.
@@ -24,14 +25,12 @@ final readonly class ParameterTypeNodeApplier implements RetypeNodeApplierInterf
      */
     public function supports(RetypeOperation $operation): bool
     {
-        return RetypeTargetKind::METHOD_PARAMETER === $operation->targetKind
-            || RetypeTargetKind::FUNCTION_PARAMETER === $operation->targetKind
-            || RetypeTargetKind::CLOSURE_PARAMETER === $operation->targetKind
-            || RetypeTargetKind::ARROW_FUNCTION_PARAMETER === $operation->targetKind;
+        return RetypeTargetKind::CLOSURE_RETURN === $operation->targetKind
+            || RetypeTargetKind::ARROW_FUNCTION_RETURN === $operation->targetKind;
     }
 
     /**
-     * Applies one parameter type change operation.
+     * Applies one callable return type change operation.
      *
      * @param RetypeOperation          $operation the retype operation to apply
      * @param RetypeApplicationContext $context   the retype application context
@@ -40,16 +39,16 @@ final readonly class ParameterTypeNodeApplier implements RetypeNodeApplierInterf
     {
         $node = $operation->node;
 
-        if (!$node instanceof Param) {
+        if (!$node instanceof Closure && !$node instanceof ArrowFunction) {
             $context->diagnostics->add(new RetypeDiagnostic(
                 severity: RetypeDiagnosticSeverity::WARNING,
-                message: sprintf('Unsupported parameter retype node "%s".', $node::class),
+                message: sprintf('Unsupported nested callable return retype node "%s".', $node::class),
             ));
 
             return false;
         }
 
-        $node->type = null === $operation->typeNode ? null : clone $operation->typeNode;
+        $node->returnType = null === $operation->typeNode ? null : clone $operation->typeNode;
 
         return true;
     }

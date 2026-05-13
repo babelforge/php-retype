@@ -60,7 +60,12 @@ The available step methods mirror the supported direct operations:
 - `executeStepFunctionReturnTypeChange()`;
 - `executeStepPropertyTypeChange()`;
 - `executeStepClassConstantTypeChange()`;
-- `executeStepEnumBackingTypeChange()`.
+- `executeStepEnumBackingTypeChange()`;
+- `executeStepClosureParameterTypeInMethod()`;
+- `executeStepClosureReturnTypeInMethod()`;
+- `executeStepArrowFunctionParameterTypeInMethod()`;
+- `executeStepArrowFunctionReturnTypeInMethod()`;
+- matching `InFunction` and `InFile` variants.
 
 Each successful step applies the plan to virtual files and returns a refreshed `RetypeStepContext`.
 
@@ -215,6 +220,74 @@ $result = $retype->changeEnumBackingType(
 ```
 
 Enum backing type changes accept only `int` and `string` identifiers, matching PHP backed enum syntax.
+
+## Plan A Closure Or Arrow-Function Type Change
+
+Closures and arrow functions are selected by a public container and a zero-based index inside that container.
+
+Supported containers:
+
+- method: `className` and `methodName`;
+- function: `functionName`;
+- file: `filePath`.
+
+Supported nested callable kinds:
+
+- closure;
+- arrow function.
+
+Supported targets:
+
+- parameter type;
+- return type.
+
+Indexes are computed in deterministic DFS order inside the selected container before mutation.
+
+Example for a closure return inside a method:
+
+```php
+use PhpParser\Node\Name;
+
+$plan = $retype->planClosureReturnTypeInMethod(
+    className: App\Mailer::class,
+    methodName: 'send',
+    closureIndex: 0,
+    typeNode: new Name('SendResult'),
+    docType: 'SendResult',
+);
+```
+
+Example for an arrow-function parameter inside a function:
+
+```php
+use PhpParser\Node\Name;
+
+$result = $retype->changeArrowFunctionParameterTypeInFunction(
+    functionName: 'App\\map_message',
+    arrowFunctionIndex: 0,
+    parameterName: 'message',
+    typeNode: new Name('Message'),
+    docType: 'Message',
+);
+```
+
+Example for a closure parameter inside a file:
+
+```php
+use PhpParser\Node\Name;
+
+$result = $retype->changeClosureParameterTypeInFile(
+    filePath: '/project/bootstrap.php',
+    closureIndex: 0,
+    parameterName: 'message',
+    typeNode: new Name('Message'),
+    docType: 'Message',
+);
+```
+
+The same naming pattern exists for direct `plan...`, direct `change...`, and orchestrable `executeStep...` methods.
+
+`php-retype` finds the virtual file from the selected container. Callers do not need to know `VirtualPhpSourceFile`.
 
 ## Plan A Method Parameter Type Change
 
@@ -378,6 +451,7 @@ For method and function parameters:
 - native `void` and `never` are rejected because they are invalid parameter and property types;
 - native `void` and `never` are accepted as standalone return types;
 - enum backing types must be `int` or `string`;
+- closure and arrow-function indexes must be zero or positive;
 - nullable `void`, nullable `never`, nullable `mixed`, and unions containing `void` or `never` are rejected for return types;
 - blank PHPDoc type strings are rejected when provided.
 

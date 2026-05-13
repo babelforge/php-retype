@@ -2,7 +2,7 @@
 
 `php-noobs/php-retype` is a semantic PHP type refactoring library built on `php-noobs/member-graph` and `php-noobs/php-source-registry`.
 
-It changes PHP type declarations from semantic graph facts instead of textual search. The package supports method parameter, function parameter, method return, function return, property, class constant, and enum backing type changes, with native PHP types and PHPDoc types provided as separate explicit inputs when the target supports both.
+It changes PHP type declarations from semantic graph facts instead of textual search. The package supports method parameter, function parameter, method return, function return, property, class constant, enum backing, closure, and arrow-function type changes, with native PHP types and PHPDoc types provided as separate explicit inputs when the target supports both.
 
 ## Installation
 
@@ -79,6 +79,20 @@ $result = $retype->changeEnumBackingType(
 
 `typeNode` is the PHPParser native type node to write. `docType` is the PHPDoc type string to write when the target supports PHPDoc mutation. Passing `null` as `typeNode` removes the native type on targets where PHP allows an absent native type, and passing `null` as `docType` leaves the supported PHPDoc tag unchanged.
 
+Closure and arrow-function changes are selected by container plus zero-based index:
+
+```php
+$result = $retype->changeClosureReturnTypeInMethod(
+    className: App\Mailer::class,
+    methodName: 'send',
+    closureIndex: 0,
+    typeNode: new Name('SendResult'),
+    docType: 'SendResult',
+);
+```
+
+The supported containers are method, function, and file. Closure and arrow-function indexes are computed in deterministic DFS order inside the selected container before mutation.
+
 ## Transactions
 
 Standalone callers can group several type changes in an in-memory transaction:
@@ -142,6 +156,10 @@ Step execution applies one plan and returns the refreshed context for the next o
 | Property | Supported | Direct `@var` |
 | Class constant | Supported | Direct `@var` |
 | Enum backing type | Supported | Not applicable |
+| Closure parameter | Supported | Direct `@param` when attached |
+| Closure return | Supported | Direct `@return` when attached |
+| Arrow function parameter | Supported | Direct `@param` when attached |
+| Arrow function return | Supported | Direct `@return` when attached |
 | Namespace/global constant | Not supported by PHP native syntax | Not applicable |
 
 Promoted properties are supported through their promoted parameter node.

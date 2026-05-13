@@ -15,6 +15,7 @@ The architecture follows the `php-rename` model while keeping type-specific sema
 - `PropertyTypeChangeRequest`: describes a property type-change intent.
 - `ClassConstantTypeChangeRequest`: describes a class constant type-change intent.
 - `EnumBackingTypeChangeRequest`: describes an enum backing type-change intent.
+- `NestedCallableTypeChangeRequest`: describes a closure or arrow-function type-change intent inside a method, function, or file container.
 - `RetypePlan`: contains planned operations and diagnostics.
 - `RetypeOperation`: targets one AST node in one virtual file.
 - `PropertyRetypeOperationContext`: carries structural context needed for grouped property declaration splitting.
@@ -54,6 +55,7 @@ It exposes:
 - `changeClassConstantType()`;
 - `planEnumBackingTypeChange()`;
 - `changeEnumBackingType()`;
+- explicit `plan...`, `change...`, and `executeStep...` methods for closure and arrow-function parameter and return changes inside methods, functions, and files;
 - `executeStep()`;
 - `executeStepMethodParameterTypeChange()`;
 - `executeStepFunctionParameterTypeChange()`;
@@ -72,6 +74,7 @@ It exposes:
 - `PropertyTypeChangePlannerInterface`;
 - `ClassConstantTypeChangePlannerInterface`;
 - `EnumBackingTypeChangePlannerInterface`;
+- `NestedCallableTypeChangePlannerInterface`;
 - `RetypePlanApplierInterface`.
 
 ## Infrastructure
@@ -104,6 +107,7 @@ Current implementations:
 - `PropertyTypeNodeApplier`;
 - `ClassConstantTypeNodeApplier`;
 - `EnumBackingTypeNodeApplier`;
+- `CallableReturnTypeNodeApplier`;
 - `ParameterDocblockTypeApplier`;
 - `ReturnDocblockTypeApplier`;
 - `VarDocblockTypeApplier`.
