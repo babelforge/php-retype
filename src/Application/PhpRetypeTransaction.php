@@ -6,6 +6,8 @@ namespace PhpNoobs\PhpRetype\Application;
 
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
+use PhpNoobs\PhpRetype\Application\Contract\ClassConstantTypeChangePlannerInterface;
+use PhpNoobs\PhpRetype\Application\Contract\EnumBackingTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\FunctionParameterTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\FunctionReturnTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\MethodParameterTypeChangePlannerInterface;
@@ -56,6 +58,8 @@ final class PhpRetypeTransaction
      * @param FunctionReturnTypeChangePlannerInterface    $functionReturnTypeChangePlanner    the function return type-change planner
      * @param MethodReturnTypeChangePlannerInterface      $methodReturnTypeChangePlanner      the method return type-change planner
      * @param PropertyTypeChangePlannerInterface          $propertyTypeChangePlanner          the property type-change planner
+     * @param ClassConstantTypeChangePlannerInterface     $classConstantTypeChangePlanner     the class constant type-change planner
+     * @param EnumBackingTypeChangePlannerInterface       $enumBackingTypeChangePlanner       the enum backing type-change planner
      * @param RetypePlanApplierInterface                  $retypePlanApplier                  the retype plan applier
      */
     public function __construct(
@@ -65,6 +69,8 @@ final class PhpRetypeTransaction
         private readonly FunctionReturnTypeChangePlannerInterface $functionReturnTypeChangePlanner,
         private readonly MethodReturnTypeChangePlannerInterface $methodReturnTypeChangePlanner,
         private readonly PropertyTypeChangePlannerInterface $propertyTypeChangePlanner,
+        private readonly ClassConstantTypeChangePlannerInterface $classConstantTypeChangePlanner,
+        private readonly EnumBackingTypeChangePlannerInterface $enumBackingTypeChangePlanner,
         private readonly RetypePlanApplierInterface $retypePlanApplier,
     ) {
         $this->diagnostics = RetypeDiagnosticCollection::empty();
@@ -199,6 +205,48 @@ final class PhpRetypeTransaction
             propertyNames: $propertyNames,
             typeNode: $typeNode,
             docType: $docType,
+        ));
+    }
+
+    /**
+     * Plans and applies a class constant type change within the transaction.
+     *
+     * @param string                                                       $className    the class-like owner FQCN
+     * @param string                                                       $constantName the class constant name
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode     the native PHP type node to write
+     * @param string|null                                                  $docType      the PHPDoc type to write in the `@var` tag
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     * @throws \LogicException           when the transaction is no longer active
+     */
+    public function changeClassConstantType(
+        string $className,
+        string $constantName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+    ): RetypeResult {
+        return $this->execute($this->retyper()->planClassConstantTypeChange(
+            className: $className,
+            constantName: $constantName,
+            typeNode: $typeNode,
+            docType: $docType,
+        ));
+    }
+
+    /**
+     * Plans and applies an enum backing type change within the transaction.
+     *
+     * @param string     $enumName the enum FQCN
+     * @param Identifier $typeNode the native PHP backing type node to write
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     * @throws \LogicException           when the transaction is no longer active
+     */
+    public function changeEnumBackingType(string $enumName, Identifier $typeNode): RetypeResult
+    {
+        return $this->execute($this->retyper()->planEnumBackingTypeChange(
+            enumName: $enumName,
+            typeNode: $typeNode,
         ));
     }
 
@@ -373,6 +421,8 @@ final class PhpRetypeTransaction
             functionReturnTypeChangePlanner: $this->functionReturnTypeChangePlanner,
             methodReturnTypeChangePlanner: $this->methodReturnTypeChangePlanner,
             propertyTypeChangePlanner: $this->propertyTypeChangePlanner,
+            classConstantTypeChangePlanner: $this->classConstantTypeChangePlanner,
+            enumBackingTypeChangePlanner: $this->enumBackingTypeChangePlanner,
             retypePlanApplier: $this->retypePlanApplier,
         );
     }

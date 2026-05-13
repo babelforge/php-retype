@@ -15,6 +15,9 @@ The integration tests cover:
 - grouped property native type changes;
 - promoted property native type changes;
 - grouped property declaration splitting;
+- class constant native type and direct `@var` changes;
+- grouped class constant declaration splitting;
+- enum backing type changes;
 - transaction-neutral step execution with refreshed member graph contexts;
 - step execution blocked by plan errors;
 - standalone transaction commit and rollback;
@@ -24,6 +27,7 @@ The integration tests cover:
 - direct `@var` type changes;
 - native type removal;
 - invalid `void` parameter type rejection;
+- invalid enum backing type rejection;
 - invalid nullable and union return type rejection.
 
 ## Quality Commands
@@ -55,6 +59,11 @@ When adding a new type-change slice:
 - document the new slice in the supported matrix.
 
 When a type-change slice needs source-node facts that `member-graph` does not expose, the implementation uses an upstream `member-graph` capability instead of a local semantic scanner.
+
+Current backlog:
+
+- closure parameter and closure return type changes;
+- arrow function parameter and arrow function return type changes.
 
 ## Graph Refresh Tests
 

@@ -27,7 +27,7 @@ use PhpNoobs\PhpRetype\Application\PhpRetype;
 $retype = PhpRetype::fromBuild($build);
 ```
 
-This is the integration point for orchestration packages such as `php-refactor`.
+This is the integration point for orchestration packages that already own a current member graph build.
 
 ## Execute Orchestrable Retype Steps
 
@@ -58,7 +58,9 @@ The available step methods mirror the supported direct operations:
 - `executeStepFunctionParameterTypeChange()`;
 - `executeStepMethodReturnTypeChange()`;
 - `executeStepFunctionReturnTypeChange()`;
-- `executeStepPropertyTypeChange()`.
+- `executeStepPropertyTypeChange()`;
+- `executeStepClassConstantTypeChange()`;
+- `executeStepEnumBackingTypeChange()`.
 
 Each successful step applies the plan to virtual files and returns a refreshed `RetypeStepContext`.
 
@@ -96,7 +98,7 @@ $result = $transaction->commit();
 
 `PhpRetypeTransaction` is the local transaction wrapper for standalone `php-retype` usage. It uses the same step execution path as external orchestration, but adds local snapshots, local rollback, local status transitions, and aggregate transaction results.
 
-External orchestrators such as `php-refactor` call the `executeStep...TypeChange()` methods directly instead of nesting `PhpRetypeTransaction`.
+External orchestrators call the `executeStep...TypeChange()` methods directly instead of nesting `PhpRetypeTransaction`.
 
 `commit()` remains in-memory only.
 
@@ -151,6 +153,68 @@ The operation mutates the matched property native type and the direct `@var` tag
 If every property in a grouped declaration is targeted, the parent `Property::$type` is changed in place. If only a subset is targeted, the grouped declaration is split so untargeted properties keep their original native type and PHPDoc.
 
 Promoted properties are retyped through their promoted `PhpParser\Node\Param` node.
+
+## Plan A Class Constant Type Change
+
+Class constant type changes use the owner FQCN and constant name:
+
+```php
+use PhpParser\Node\Identifier;
+
+$plan = $retype->planClassConstantTypeChange(
+    className: App\Config::class,
+    constantName: 'DEFAULT_PORT',
+    typeNode: new Identifier('int'),
+    docType: 'int',
+);
+```
+
+## Apply A Class Constant Type Change
+
+The convenience method plans and applies in one call:
+
+```php
+use PhpParser\Node\Identifier;
+
+$result = $retype->changeClassConstantType(
+    className: App\Config::class,
+    constantName: 'DEFAULT_PORT',
+    typeNode: new Identifier('int'),
+    docType: 'int',
+);
+```
+
+The operation mutates the matched `PhpParser\Node\Stmt\ClassConst` native type and the direct `@var` tag when `docType` is provided.
+
+If only part of a grouped class constant declaration is targeted, the grouped declaration is split so untargeted constants keep their original native type and PHPDoc.
+
+## Plan An Enum Backing Type Change
+
+Enum backing type changes use the enum FQCN:
+
+```php
+use PhpParser\Node\Identifier;
+
+$plan = $retype->planEnumBackingTypeChange(
+    enumName: App\Status::class,
+    typeNode: new Identifier('int'),
+);
+```
+
+## Apply An Enum Backing Type Change
+
+The convenience method plans and applies in one call:
+
+```php
+use PhpParser\Node\Identifier;
+
+$result = $retype->changeEnumBackingType(
+    enumName: App\Status::class,
+    typeNode: new Identifier('int'),
+);
+```
+
+Enum backing type changes accept only `int` and `string` identifiers, matching PHP backed enum syntax.
 
 ## Plan A Method Parameter Type Change
 
@@ -309,9 +373,11 @@ For method and function parameters:
 
 - class names must be FQCN-like;
 - method names, parameter names, and property names must be short identifiers;
+- class constant names must be short identifiers;
 - parameter indexes must be zero or positive;
 - native `void` and `never` are rejected because they are invalid parameter and property types;
 - native `void` and `never` are accepted as standalone return types;
+- enum backing types must be `int` or `string`;
 - nullable `void`, nullable `never`, nullable `mixed`, and unions containing `void` or `never` are rejected for return types;
 - blank PHPDoc type strings are rejected when provided.
 

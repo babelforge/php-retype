@@ -6,6 +6,8 @@ namespace PhpNoobs\PhpRetype\Application;
 
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
+use PhpNoobs\PhpRetype\Application\Contract\ClassConstantTypeChangePlannerInterface;
+use PhpNoobs\PhpRetype\Application\Contract\EnumBackingTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\FunctionParameterTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\FunctionReturnTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\MethodParameterTypeChangePlannerInterface;
@@ -14,6 +16,8 @@ use PhpNoobs\PhpRetype\Application\Contract\PropertyTypeChangePlannerInterface;
 use PhpNoobs\PhpRetype\Application\Contract\RetypePlanApplierInterface;
 use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
 use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypeResult;
+use PhpNoobs\PhpRetype\Domain\Retype\Request\ClassConstantTypeChangeRequest;
+use PhpNoobs\PhpRetype\Domain\Retype\Request\EnumBackingTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\FunctionParameterTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\FunctionReturnTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\MethodParameterTypeChangeRequest;
@@ -21,6 +25,8 @@ use PhpNoobs\PhpRetype\Domain\Retype\Request\MethodReturnTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Request\PropertyTypeChangeRequest;
 use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepContext;
 use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepResult;
+use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphClassConstantTypeChangePlanner;
+use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphEnumBackingTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphFunctionParameterTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphFunctionReturnTypeChangePlanner;
 use PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner\MemberGraphMethodParameterTypeChangePlanner;
@@ -47,6 +53,8 @@ final readonly class PhpRetype
      * @param FunctionReturnTypeChangePlannerInterface    $functionReturnTypeChangePlanner    the function return type change planner
      * @param MethodReturnTypeChangePlannerInterface      $methodReturnTypeChangePlanner      the method return type change planner
      * @param PropertyTypeChangePlannerInterface          $propertyTypeChangePlanner          the property type change planner
+     * @param ClassConstantTypeChangePlannerInterface     $classConstantTypeChangePlanner     the class constant type change planner
+     * @param EnumBackingTypeChangePlannerInterface       $enumBackingTypeChangePlanner       the enum backing type change planner
      * @param RetypePlanApplierInterface                  $retypePlanApplier                  the retype plan applier
      * @param RetypeStepExecutor                          $retypeStepExecutor                 the retype step executor
      */
@@ -57,6 +65,8 @@ final readonly class PhpRetype
         private FunctionReturnTypeChangePlannerInterface $functionReturnTypeChangePlanner,
         private MethodReturnTypeChangePlannerInterface $methodReturnTypeChangePlanner,
         private PropertyTypeChangePlannerInterface $propertyTypeChangePlanner,
+        private ClassConstantTypeChangePlannerInterface $classConstantTypeChangePlanner,
+        private EnumBackingTypeChangePlannerInterface $enumBackingTypeChangePlanner,
         private RetypePlanApplierInterface $retypePlanApplier,
         private RetypeStepExecutor $retypeStepExecutor,
     ) {
@@ -93,6 +103,8 @@ final readonly class PhpRetype
      * @param FunctionReturnTypeChangePlannerInterface|null    $functionReturnTypeChangePlanner    the optional function return type change planner override
      * @param MethodReturnTypeChangePlannerInterface|null      $methodReturnTypeChangePlanner      the optional method return type change planner override
      * @param PropertyTypeChangePlannerInterface|null          $propertyTypeChangePlanner          the optional property type change planner override
+     * @param ClassConstantTypeChangePlannerInterface|null     $classConstantTypeChangePlanner     the optional class constant type change planner override
+     * @param EnumBackingTypeChangePlannerInterface|null       $enumBackingTypeChangePlanner       the optional enum backing type change planner override
      * @param RetypePlanApplierInterface|null                  $retypePlanApplier                  the optional retype plan applier override
      */
     public static function fromBuild(
@@ -102,6 +114,8 @@ final readonly class PhpRetype
         ?FunctionReturnTypeChangePlannerInterface $functionReturnTypeChangePlanner = null,
         ?MethodReturnTypeChangePlannerInterface $methodReturnTypeChangePlanner = null,
         ?PropertyTypeChangePlannerInterface $propertyTypeChangePlanner = null,
+        ?ClassConstantTypeChangePlannerInterface $classConstantTypeChangePlanner = null,
+        ?EnumBackingTypeChangePlannerInterface $enumBackingTypeChangePlanner = null,
         ?RetypePlanApplierInterface $retypePlanApplier = null,
     ): self {
         $retypePlanApplier ??= new AstRetypePlanApplier();
@@ -113,6 +127,8 @@ final readonly class PhpRetype
             functionReturnTypeChangePlanner: $functionReturnTypeChangePlanner ?? new MemberGraphFunctionReturnTypeChangePlanner(),
             methodReturnTypeChangePlanner: $methodReturnTypeChangePlanner ?? new MemberGraphMethodReturnTypeChangePlanner(),
             propertyTypeChangePlanner: $propertyTypeChangePlanner ?? new MemberGraphPropertyTypeChangePlanner(),
+            classConstantTypeChangePlanner: $classConstantTypeChangePlanner ?? new MemberGraphClassConstantTypeChangePlanner(),
+            enumBackingTypeChangePlanner: $enumBackingTypeChangePlanner ?? new MemberGraphEnumBackingTypeChangePlanner(),
             retypePlanApplier: $retypePlanApplier,
             retypeStepExecutor: new RetypeStepExecutor($retypePlanApplier),
         );
@@ -130,6 +146,8 @@ final readonly class PhpRetype
             functionReturnTypeChangePlanner: $this->functionReturnTypeChangePlanner,
             methodReturnTypeChangePlanner: $this->methodReturnTypeChangePlanner,
             propertyTypeChangePlanner: $this->propertyTypeChangePlanner,
+            classConstantTypeChangePlanner: $this->classConstantTypeChangePlanner,
+            enumBackingTypeChangePlanner: $this->enumBackingTypeChangePlanner,
             retypePlanApplier: $this->retypePlanApplier,
         );
     }
@@ -291,6 +309,58 @@ final readonly class PhpRetype
                 propertyNames: $propertyNames,
                 typeNode: $typeNode,
                 docType: $docType,
+            ),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable class constant type-change step.
+     *
+     * @param RetypeStepContext                                            $context      the current retype step context
+     * @param string                                                       $className    the class-like owner FQCN
+     * @param string                                                       $constantName the class constant name
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode     the native PHP type node to write
+     * @param string|null                                                  $docType      the PHPDoc type to write in the `@var` tag
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function executeStepClassConstantTypeChange(
+        RetypeStepContext $context,
+        string $className,
+        string $constantName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+    ): RetypeStepResult {
+        return $this->executeStep($this->classConstantTypeChangePlanner->plan(
+            request: new ClassConstantTypeChangeRequest(
+                className: $className,
+                constantName: $constantName,
+                typeNode: $typeNode,
+                docType: $docType,
+            ),
+            build: $context->currentBuild,
+        ), $context);
+    }
+
+    /**
+     * Executes one orchestrable enum backing type-change step.
+     *
+     * @param RetypeStepContext $context  the current retype step context
+     * @param string            $enumName the enum FQCN
+     * @param Identifier        $typeNode the native PHP backing type node to write
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function executeStepEnumBackingTypeChange(
+        RetypeStepContext $context,
+        string $enumName,
+        Identifier $typeNode,
+    ): RetypeStepResult {
+        return $this->executeStep($this->enumBackingTypeChangePlanner->plan(
+            request: new EnumBackingTypeChangeRequest(
+                enumName: $enumName,
+                typeNode: $typeNode,
             ),
             build: $context->currentBuild,
         ), $context);
@@ -573,6 +643,98 @@ final readonly class PhpRetype
                 propertyNames: $propertyNames,
                 typeNode: $typeNode,
                 docType: $docType,
+            ),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans a class constant type change.
+     *
+     * @param string                                                       $className    the class-like owner FQCN
+     * @param string                                                       $constantName the class constant name
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode     the native PHP type node to write
+     * @param string|null                                                  $docType      the PHPDoc type to write in the `@var` tag
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function planClassConstantTypeChange(
+        string $className,
+        string $constantName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+    ): RetypePlan {
+        return $this->classConstantTypeChangePlanner->plan(
+            request: new ClassConstantTypeChangeRequest(
+                className: $className,
+                constantName: $constantName,
+                typeNode: $typeNode,
+                docType: $docType,
+            ),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies a class constant type change to virtual file AST nodes.
+     *
+     * @param string                                                       $className    the class-like owner FQCN
+     * @param string                                                       $constantName the class constant name
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode     the native PHP type node to write
+     * @param string|null                                                  $docType      the PHPDoc type to write in the `@var` tag
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function changeClassConstantType(
+        string $className,
+        string $constantName,
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+        ?string $docType = null,
+    ): RetypeResult {
+        return $this->retypePlanApplier->apply(
+            plan: $this->planClassConstantTypeChange(
+                className: $className,
+                constantName: $constantName,
+                typeNode: $typeNode,
+                docType: $docType,
+            ),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans an enum backing type change.
+     *
+     * @param string     $enumName the enum FQCN
+     * @param Identifier $typeNode the native PHP backing type node to write
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function planEnumBackingTypeChange(string $enumName, Identifier $typeNode): RetypePlan
+    {
+        return $this->enumBackingTypeChangePlanner->plan(
+            request: new EnumBackingTypeChangeRequest(
+                enumName: $enumName,
+                typeNode: $typeNode,
+            ),
+            build: $this->build,
+        );
+    }
+
+    /**
+     * Plans and applies an enum backing type change to virtual file AST nodes.
+     *
+     * @param string     $enumName the enum FQCN
+     * @param Identifier $typeNode the native PHP backing type node to write
+     *
+     * @throws \InvalidArgumentException when one retype input is invalid
+     */
+    public function changeEnumBackingType(string $enumName, Identifier $typeNode): RetypeResult
+    {
+        return $this->retypePlanApplier->apply(
+            plan: $this->planEnumBackingTypeChange(
+                enumName: $enumName,
+                typeNode: $typeNode,
             ),
             build: $this->build,
         );

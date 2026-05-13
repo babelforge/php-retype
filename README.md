@@ -2,7 +2,7 @@
 
 `php-noobs/php-retype` is a semantic PHP type refactoring library built on `php-noobs/member-graph` and `php-noobs/php-source-registry`.
 
-It changes PHP type declarations from semantic graph facts instead of textual search. The package supports property, method parameter, function parameter, method return, and function return type changes, with native PHP types and PHPDoc types provided as separate explicit inputs.
+It changes PHP type declarations from semantic graph facts instead of textual search. The package supports method parameter, function parameter, method return, function return, property, class constant, and enum backing type changes, with native PHP types and PHPDoc types provided as separate explicit inputs when the target supports both.
 
 ## Installation
 
@@ -51,7 +51,33 @@ $result = $retype->changePropertyType(
 
 When only part of a grouped property declaration is targeted, the declaration is split so untargeted properties keep their original type.
 
-`typeNode` is the PHPParser native type node to write. `docType` is the PHPDoc type string to write. Passing `null` as `typeNode` removes the native type, and passing `null` as `docType` leaves the supported PHPDoc tag unchanged.
+Class constant type changes use the same explicit native/PHPDoc split:
+
+```php
+use PhpParser\Node\Identifier;
+
+$result = $retype->changeClassConstantType(
+    className: App\Config::class,
+    constantName: 'DEFAULT_PORT',
+    typeNode: new Identifier('int'),
+    docType: 'int',
+);
+```
+
+When only one constant in a grouped class constant declaration is targeted, the declaration is split so untargeted constants keep their original type.
+
+Enum backing type changes accept only `int` or `string` native identifiers:
+
+```php
+use PhpParser\Node\Identifier;
+
+$result = $retype->changeEnumBackingType(
+    enumName: App\Status::class,
+    typeNode: new Identifier('int'),
+);
+```
+
+`typeNode` is the PHPParser native type node to write. `docType` is the PHPDoc type string to write when the target supports PHPDoc mutation. Passing `null` as `typeNode` removes the native type on targets where PHP allows an absent native type, and passing `null` as `docType` leaves the supported PHPDoc tag unchanged.
 
 ## Transactions
 
@@ -114,6 +140,9 @@ Step execution applies one plan and returns the refreshed context for the next o
 | Method return | Supported | Direct `@return` |
 | Function return | Supported | Direct `@return` |
 | Property | Supported | Direct `@var` |
+| Class constant | Supported | Direct `@var` |
+| Enum backing type | Supported | Not applicable |
+| Namespace/global constant | Not supported by PHP native syntax | Not applicable |
 
 Promoted properties are supported through their promoted parameter node.
 

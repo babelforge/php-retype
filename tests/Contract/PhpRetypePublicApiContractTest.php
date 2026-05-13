@@ -28,12 +28,16 @@ final class PhpRetypePublicApiContractTest extends TestCase
     {
         self::assertSame([
             'beginTransaction',
+            'changeClassConstantType',
+            'changeEnumBackingType',
             'changeFunctionParameterType',
             'changeFunctionReturnType',
             'changeMethodParameterType',
             'changeMethodReturnType',
             'changePropertyType',
             'executeStep',
+            'executeStepClassConstantTypeChange',
+            'executeStepEnumBackingTypeChange',
             'executeStepFunctionParameterTypeChange',
             'executeStepFunctionReturnTypeChange',
             'executeStepMethodParameterTypeChange',
@@ -41,6 +45,8 @@ final class PhpRetypePublicApiContractTest extends TestCase
             'executeStepPropertyTypeChange',
             'fromBuild',
             'fromDirectory',
+            'planClassConstantTypeChange',
+            'planEnumBackingTypeChange',
             'planFunctionParameterTypeChange',
             'planFunctionReturnTypeChange',
             'planMethodParameterTypeChange',
@@ -55,6 +61,8 @@ final class PhpRetypePublicApiContractTest extends TestCase
     public function testItExposesTheExpectedTransactionMethods(): void
     {
         self::assertSame([
+            'changeClassConstantType',
+            'changeEnumBackingType',
             'changeFunctionParameterType',
             'changeFunctionReturnType',
             'changeMethodParameterType',

@@ -78,11 +78,37 @@ The returned property declaration context is converted to one or more retype ope
 
 Grouped property declarations produce one operation per parent `Property` statement. Promoted properties produce one operation per promoted `Param`.
 
+For class constant type changes, planning starts from:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->classConstant('App\\Config', 'DEFAULT_PORT');
+```
+
+Only `MEMBER_DECLARATION` matches backed by `PhpParser\Node\Const_` nodes are converted to retype operations.
+
+For enum backing type changes, planning starts from:
+
+```php
+use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+
+$matches = MemberGraphSourceNodeLocator::fromBuild($build)
+    ->owner('App\\Status');
+```
+
+Only `OWNER_DECLARATION` matches backed by `PhpParser\Node\Stmt\Enum_` nodes are converted to retype operations.
+
 ## Parameter Scope
 
 Parameter type changes mutate parameter declarations.
 
 Property type changes mutate property declarations. Grouped property declarations are split when only part of the group is targeted.
+
+Class constant type changes mutate class constant declarations. Grouped class constant declarations are split when only part of the group is targeted.
+
+Enum backing type changes mutate the enum declaration scalar type.
 
 It deliberately ignores:
 
@@ -101,6 +127,7 @@ Examples:
 
 - target parameter or function not found;
 - target property not found;
+- target class constant or enum not found;
 - source node cannot be located;
 - source node role is unsupported;
 - unsupported declaration shapes.

@@ -58,6 +58,18 @@ When every property in a grouped `Property` statement is targeted, the native pr
 
 When only part of a grouped `Property` statement is targeted, the applier keeps the targeted properties on the original statement, writes the new native type there, and inserts a second statement for the remaining properties with their original native type.
 
+It supports class constant type changes for:
+
+- `PhpParser\Node\Stmt\ClassConst`.
+
+When only part of a grouped `ClassConst` statement is targeted, the applier keeps the targeted constants on the original statement, writes the new native type there, and inserts a second statement for the remaining constants with their original native type.
+
+It supports enum backing type changes for:
+
+- `PhpParser\Node\Stmt\Enum_`.
+
+The enum scalar type is replaced with a clone of the caller-provided `Identifier`. PHP only supports `int` and `string` backed enum scalar types.
+
 After successful node mutation, each touched `VirtualPhpSourceFile` is marked as updated through `VirtualPhpSourceFile::update()`.
 
 Unsupported target kinds or node types produce diagnostics instead of triggering fallback source inspection.
@@ -89,6 +101,8 @@ Supported property docblock references:
 ```
 
 The supported `@var` tag type is rewritten only on the direct property or promoted-property docblock owner reported by `member-graph`.
+
+Class constant docblocks use the same direct `@var` form and are rewritten only on the matched class constant declaration.
 
 Free-text descriptions are not rewritten. The implementation does not scan unrelated files or comments.
 

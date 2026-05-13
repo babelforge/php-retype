@@ -14,4 +14,6 @@ enum RetypeTargetKind: string
     case METHOD_RETURN = 'method_return';
     case FUNCTION_RETURN = 'function_return';
     case PROPERTY = 'property';
+    case CLASS_CONSTANT = 'class_constant';
+    case ENUM_BACKING = 'enum_backing';
 }

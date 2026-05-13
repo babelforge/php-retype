@@ -13,6 +13,8 @@ The architecture follows the `php-rename` model while keeping type-specific sema
 - `MethodReturnTypeChangeRequest`: describes a method return type-change intent.
 - `FunctionReturnTypeChangeRequest`: describes a function return type-change intent.
 - `PropertyTypeChangeRequest`: describes a property type-change intent.
+- `ClassConstantTypeChangeRequest`: describes a class constant type-change intent.
+- `EnumBackingTypeChangeRequest`: describes an enum backing type-change intent.
 - `RetypePlan`: contains planned operations and diagnostics.
 - `RetypeOperation`: targets one AST node in one virtual file.
 - `PropertyRetypeOperationContext`: carries structural context needed for grouped property declaration splitting.
@@ -48,12 +50,18 @@ It exposes:
 - `changeFunctionReturnType()`;
 - `planPropertyTypeChange()`;
 - `changePropertyType()`;
+- `planClassConstantTypeChange()`;
+- `changeClassConstantType()`;
+- `planEnumBackingTypeChange()`;
+- `changeEnumBackingType()`;
 - `executeStep()`;
 - `executeStepMethodParameterTypeChange()`;
 - `executeStepFunctionParameterTypeChange()`;
 - `executeStepMethodReturnTypeChange()`;
 - `executeStepFunctionReturnTypeChange()`;
-- `executeStepPropertyTypeChange()`.
+- `executeStepPropertyTypeChange()`;
+- `executeStepClassConstantTypeChange()`;
+- `executeStepEnumBackingTypeChange()`.
 
 `Application/Contract` contains the service contracts used by the facade:
 
@@ -62,6 +70,8 @@ It exposes:
 - `MethodReturnTypeChangePlannerInterface`;
 - `FunctionReturnTypeChangePlannerInterface`;
 - `PropertyTypeChangePlannerInterface`;
+- `ClassConstantTypeChangePlannerInterface`;
+- `EnumBackingTypeChangePlannerInterface`;
 - `RetypePlanApplierInterface`.
 
 ## Infrastructure
@@ -92,6 +102,8 @@ Current implementations:
 - `MethodReturnTypeNodeApplier`;
 - `FunctionReturnTypeNodeApplier`;
 - `PropertyTypeNodeApplier`;
+- `ClassConstantTypeNodeApplier`;
+- `EnumBackingTypeNodeApplier`;
 - `ParameterDocblockTypeApplier`;
 - `ReturnDocblockTypeApplier`;
 - `VarDocblockTypeApplier`.
@@ -117,7 +129,7 @@ This rebuild is stricter than the rename overlay model. A type replacement can c
 
 Transactions reuse the same step execution path as the orchestrable API, so direct transaction calls and external orchestration calls keep the same planning, application, diagnostics, and graph-refresh behavior.
 
-`RetypeStepExecutor` is transaction-neutral. It never snapshots or rolls back virtual files. Snapshot ownership belongs either to `PhpRetypeTransaction` for local usage or to an external orchestrator such as `php-refactor` for cross-service workflows.
+`RetypeStepExecutor` is transaction-neutral. It never snapshots or rolls back virtual files. Snapshot ownership belongs either to `PhpRetypeTransaction` for local usage or to an external orchestrator for cross-service workflows.
 
 `Infrastructure/PhpParser/Transaction` contains virtual-file snapshot support used by transaction rollback.
 

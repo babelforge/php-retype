@@ -110,6 +110,35 @@ final readonly class RetypeInputValidator
     }
 
     /**
+     * Validates a native type used on a class constant.
+     *
+     * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode the native type node
+     *
+     * @throws \InvalidArgumentException when the node is invalid for a class constant
+     */
+    public static function guardClassConstantNativeType(
+        Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode,
+    ): void {
+        self::guardNonVoidNonNeverNativeType($typeNode, 'class constant');
+    }
+
+    /**
+     * Validates a native type used as an enum backing type.
+     *
+     * @param Identifier $typeNode the native enum backing type node
+     *
+     * @throws \InvalidArgumentException when the node is invalid for an enum backing type
+     */
+    public static function guardEnumBackingNativeType(Identifier $typeNode): void
+    {
+        $name = strtolower($typeNode->name);
+
+        if ('int' !== $name && 'string' !== $name) {
+            throw new \InvalidArgumentException(sprintf('The native "%s" type is not valid for an enum backing type.', $name));
+        }
+    }
+
+    /**
      * Validates a native type that cannot contain void or never.
      *
      * @param Identifier|Name|NullableType|UnionType|IntersectionType|null $typeNode the native type node
