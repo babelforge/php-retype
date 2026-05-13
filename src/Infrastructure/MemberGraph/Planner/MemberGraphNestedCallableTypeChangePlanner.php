@@ -234,10 +234,32 @@ final readonly class MemberGraphNestedCallableTypeChangePlanner implements Neste
 
         $diagnostics->add(new RetypeDiagnostic(
             severity: RetypeDiagnosticSeverity::WARNING,
-            message: 'Nested callable parameter was not found for the requested type change.',
+            message: $this->missingParameterMessage($request),
         ));
 
         return null;
+    }
+
+    /**
+     * Returns a diagnostic message for a missing nested callable parameter.
+     *
+     * @param NestedCallableTypeChangeRequest $request the nested callable request
+     */
+    private function missingParameterMessage(NestedCallableTypeChangeRequest $request): string
+    {
+        if (null !== $request->parameterName && null !== $request->parameterIndex) {
+            return sprintf('Nested callable parameter "%s" at index %d was not found for the requested type change.', $request->parameterName, $request->parameterIndex);
+        }
+
+        if (null !== $request->parameterName) {
+            return sprintf('Nested callable parameter "%s" was not found for the requested type change.', $request->parameterName);
+        }
+
+        if (null !== $request->parameterIndex) {
+            return sprintf('Nested callable parameter at index %d was not found for the requested type change.', $request->parameterIndex);
+        }
+
+        return 'Nested callable parameter was not found for the requested type change.';
     }
 
     /**

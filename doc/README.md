@@ -6,7 +6,7 @@ This documentation describes the `PhpRetype` component, its public API, and its 
 
 `PhpRetype` is a PHP refactoring library focused on safe type changes. It consumes `php-noobs/member-graph` for semantic source-node facts and uses `php-noobs/php-source-registry` virtual files for AST mutation and physical writing delegation.
 
-The package supports planning, applying, transaction-neutral step execution, and standalone in-memory transactions for property, method parameter, function parameter, method return, and function return type changes. It keeps native PHP type nodes and PHPDoc type strings as two explicit caller-provided values.
+The package supports planning, applying, transaction-neutral step execution, and standalone in-memory transactions for declaration type changes, including properties, parameters, returns, class constants, enum backing types, closures, and arrow functions. It keeps native PHP type nodes and PHPDoc type strings as two explicit caller-provided values.
 
 ## Pages
 
@@ -17,6 +17,7 @@ The package supports planning, applying, transaction-neutral step execution, and
 5. [AST Application](05-ast-application.md)
 6. [Testing And Maintenance](06-testing-and-maintenance.md)
 7. [Supported Retype Matrix](07-supported-retype-matrix.md)
+8. [Nested Callable Retype](08-nested-callable-retype.md)
 
 ## External Dependencies
 

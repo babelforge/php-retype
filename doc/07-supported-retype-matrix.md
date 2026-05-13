@@ -1,6 +1,6 @@
 # Supported Retype Matrix
 
-Navigation: [Documentation](README.md) | [Previous: Testing And Maintenance](06-testing-and-maintenance.md)
+Navigation: [Documentation](README.md) | [Previous: Testing And Maintenance](06-testing-and-maintenance.md) | [Next: Nested Callable Retype](08-nested-callable-retype.md)
 
 This page lists supported type-change operations.
 
@@ -95,4 +95,4 @@ For method and function returns:
 - unions containing `void` or `never` are rejected;
 - blank PHPDoc type strings are rejected.
 
-Navigation: [Documentation](README.md) | [Previous: Testing And Maintenance](06-testing-and-maintenance.md)
+Navigation: [Documentation](README.md) | [Previous: Testing And Maintenance](06-testing-and-maintenance.md) | [Next: Nested Callable Retype](08-nested-callable-retype.md)

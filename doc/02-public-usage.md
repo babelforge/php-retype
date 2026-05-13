@@ -289,6 +289,8 @@ The same naming pattern exists for direct `plan...`, direct `change...`, and orc
 
 `php-retype` finds the virtual file from the selected container. Callers do not need to know `VirtualPhpSourceFile`.
 
+See [Nested Callable Retype](08-nested-callable-retype.md) for the complete container and index contract.
+
 ## Plan A Method Parameter Type Change
 
 Planning produces operations and diagnostics without mutating virtual files:

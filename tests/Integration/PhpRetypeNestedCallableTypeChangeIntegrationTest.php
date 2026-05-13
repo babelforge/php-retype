@@ -6,6 +6,8 @@ namespace PhpNoobs\PhpRetype\Tests\Integration;
 
 use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
 use PhpNoobs\PhpRetype\Application\PhpRetype;
+use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
+use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
 use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepContext;
 use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
 use PhpParser\Node\Identifier;
@@ -185,6 +187,128 @@ final class PhpRetypeNestedCallableTypeChangeIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures nested closure indexes follow DFS order inside the selected container.
+     */
+    public function testItSelectsNestedClosureByDepthFirstIndex(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeNestedClosureFile($srcDirectory.'/Nested.php');
+        $this->writeSendResultFile($srcDirectory.'/SendResult.php');
+
+        $result = PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        )->changeClosureReturnTypeInMethod(
+            className: 'App\\Nested',
+            methodName: 'build',
+            closureIndex: 1,
+            typeNode: new Name('SendResult'),
+            docType: 'SendResult',
+        );
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(1, $result->plan->operations);
+        self::assertCount(0, $result->diagnostics);
+        self::assertStringContainsString('function (): string {', $printedCode);
+        self::assertStringContainsString('function (): SendResult {', $printedCode);
+    }
+
+    /**
+     * Ensures sibling closure indexes select the requested closure only.
+     */
+    public function testItSelectsSiblingClosureByIndex(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeSiblingClosureFile($srcDirectory.'/Sibling.php');
+        $this->writeMessageFile($srcDirectory.'/Message.php');
+
+        $result = PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        )->changeClosureParameterTypeInMethod(
+            className: 'App\\Sibling',
+            methodName: 'build',
+            closureIndex: 1,
+            parameterName: 'message',
+            typeNode: new Name('Message'),
+            docType: 'Message',
+        );
+        $printedCode = $this->printedCode($result->virtualFiles);
+
+        self::assertCount(1, $result->plan->operations);
+        self::assertCount(0, $result->diagnostics);
+        self::assertStringContainsString('$first = function (string $message): string', $printedCode);
+        self::assertStringContainsString('$second = function (Message $message): string', $printedCode);
+    }
+
+    /**
+     * Ensures missing nested callable parameters report an actionable diagnostic.
+     */
+    public function testItReportsMissingNestedCallableParameter(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeMailerFile($srcDirectory.'/Mailer.php');
+
+        $plan = PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        )->planClosureParameterTypeInMethod(
+            className: 'App\\Mailer',
+            methodName: 'send',
+            closureIndex: 0,
+            parameterName: 'missingMessage',
+            typeNode: new Identifier('string'),
+            docType: 'string',
+        );
+        $diagnostic = $this->firstDiagnostic($plan->diagnostics);
+
+        self::assertCount(0, $plan->operations);
+        self::assertFalse($plan->diagnostics->hasErrors());
+        self::assertNotNull($diagnostic);
+        self::assertSame(RetypeDiagnosticSeverity::WARNING, $diagnostic->severity);
+        self::assertSame('Nested callable parameter "missingMessage" was not found for the requested type change.', $diagnostic->message);
+    }
+
+    /**
+     * Ensures negative nested callable indexes are rejected before planning.
+     */
+    public function testItRejectsNegativeNestedCallableIndexBeforePlanning(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('The "callableIndex" retype input must be greater than or equal to zero.');
+
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeMailerFile($srcDirectory.'/Mailer.php');
+
+        PhpRetype::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        )->planClosureReturnTypeInMethod(
+            className: 'App\\Mailer',
+            methodName: 'send',
+            closureIndex: -1,
+            typeNode: new Identifier('string'),
+            docType: 'string',
+        );
+    }
+
+    /**
      * Writes the mailer fixture.
      *
      * @param string $filePath the file path
@@ -251,6 +375,61 @@ final class PhpRetypeNestedCallableTypeChangeIntegrationTest extends TestCase
     }
 
     /**
+     * Writes the nested closure fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeNestedClosureFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Nested
+            {
+                public function build(): void
+                {
+                    $outer = function (): string {
+                        $inner = function (): string {
+                            return 'inner';
+                        };
+
+                        return $inner();
+                    };
+                }
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the sibling closure fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeSiblingClosureFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Sibling
+            {
+                public function build(): void
+                {
+                    $first = function (string $message): string {
+                        return $message;
+                    };
+                    $second = function (string $message): string {
+                        return $message;
+                    };
+                }
+            }
+            PHP);
+    }
+
+    /**
      * Writes the message fixture.
      *
      * @param string $filePath the file path
@@ -300,6 +479,20 @@ final class PhpRetypeNestedCallableTypeChangeIntegrationTest extends TestCase
         }
 
         return $printedCode;
+    }
+
+    /**
+     * Returns the first diagnostic in a collection.
+     *
+     * @param iterable<RetypeDiagnostic> $diagnostics the diagnostics to inspect
+     */
+    private function firstDiagnostic(iterable $diagnostics): ?RetypeDiagnostic
+    {
+        foreach ($diagnostics as $diagnostic) {
+            return $diagnostic;
+        }
+
+        return null;
     }
 
     /**
