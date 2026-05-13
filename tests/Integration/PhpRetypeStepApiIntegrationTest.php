@@ -132,6 +132,79 @@ final class PhpRetypeStepApiIntegrationTest extends TestCase
     }
 
     /**
+     * Ensures property retype steps use in-memory partial refresh after grouped declaration splits.
+     */
+    public function testItExecutesPropertyTypeChangeStepsWithPartialRefresh(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writeGroupedPropertyFile($srcDirectory.'/Mailer.php');
+        $this->writeTransportFile($srcDirectory.'/Transport.php');
+
+        $build = MemberDependencyGraphFactory::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        );
+        $context = RetypeStepContext::fromBuild($build);
+
+        $step = PhpRetype::fromBuild($build)->executeStepPropertyTypeChange(
+            context: $context,
+            className: 'App\\Mailer',
+            propertyNames: ['transport', 'backupTransport'],
+            typeNode: new Name('Transport'),
+            docType: 'Transport',
+        );
+        $printedCode = $this->printedCode($step->context->currentBuild->virtualFiles);
+
+        $this->assertAppliedStep($step->applied, $step->requiresGraphRefresh, $context, $step->context);
+        self::assertCount(1, $step->touchedFiles);
+        self::assertCount(0, $step->diagnostics);
+        self::assertStringContainsString('@var Transport', $printedCode);
+        self::assertStringContainsString('private \\App\\Transport $transport, $backupTransport;', $printedCode);
+        self::assertStringContainsString('@var string', $printedCode);
+        self::assertStringContainsString('private string $legacyTransport;', $printedCode);
+    }
+
+    /**
+     * Ensures promoted property retype steps use in-memory partial refresh.
+     */
+    public function testItExecutesPromotedPropertyTypeChangeStepsWithPartialRefresh(): void
+    {
+        $srcDirectory = $this->workspace.'/src';
+        $cacheFilePath = $this->workspace.'/member-graph.cache';
+
+        mkdir($srcDirectory, 0o777, true);
+        $this->writePromotedPropertyFile($srcDirectory.'/Mailer.php');
+        $this->writeTransportFile($srcDirectory.'/Transport.php');
+
+        $build = MemberDependencyGraphFactory::fromDirectory(
+            directories: [$srcDirectory],
+            cacheFilePath: $cacheFilePath,
+            clearCache: true,
+        );
+        $context = RetypeStepContext::fromBuild($build);
+
+        $step = PhpRetype::fromBuild($build)->executeStepPropertyTypeChange(
+            context: $context,
+            className: 'App\\Mailer',
+            propertyNames: 'transport',
+            typeNode: new Name('Transport'),
+            docType: 'Transport',
+        );
+        $printedCode = $this->printedCode($step->context->currentBuild->virtualFiles);
+
+        $this->assertAppliedStep($step->applied, $step->requiresGraphRefresh, $context, $step->context);
+        self::assertCount(1, $step->touchedFiles);
+        self::assertCount(0, $step->diagnostics);
+        self::assertStringContainsString('@var Transport', $printedCode);
+        self::assertStringContainsString('public \\App\\Transport $transport', $printedCode);
+        self::assertStringNotContainsString('public string $transport', $printedCode);
+    }
+
+    /**
      * Ensures plan errors prevent application and keep the existing step context.
      */
     public function testItDoesNotApplyAStepWhenThePlanContainsErrors(): void
@@ -189,6 +262,8 @@ final class PhpRetypeStepApiIntegrationTest extends TestCase
         self::assertTrue($nextContext->currentBuild->usedInMemoryPartialRefresh());
         self::assertNotNull($nextContext->currentBuild->buildReport->inMemoryRefreshWorkingSet);
         self::assertGreaterThan(0, count($nextContext->currentBuild->buildReport->inMemoryRefreshWorkingSet->filesToRebuildGraph));
+        self::assertSame(0, $nextContext->currentBuild->buildReport->scannedFileCount);
+        self::assertFalse($nextContext->currentBuild->buildReport->cacheWriteResult->isWritten());
     }
 
     /**
@@ -238,6 +313,71 @@ final class PhpRetypeStepApiIntegrationTest extends TestCase
             function send_mail(string $message): string
             {
                 return $message;
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the grouped property fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeGroupedPropertyFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                /**
+                 * @var string
+                 */
+                private string $transport, $backupTransport, $legacyTransport;
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the promoted property fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writePromotedPropertyFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Mailer
+            {
+                public function __construct(
+                    /**
+                     * @var string
+                     */
+                    public string $transport,
+                ) {
+                }
+            }
+            PHP);
+    }
+
+    /**
+     * Writes the transport fixture.
+     *
+     * @param string $filePath the file path
+     */
+    private function writeTransportFile(string $filePath): void
+    {
+        file_put_contents($filePath, <<<'PHP'
+            <?php
+
+            namespace App;
+
+            final class Transport
+            {
             }
             PHP);
     }
