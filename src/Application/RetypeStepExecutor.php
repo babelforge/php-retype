@@ -95,7 +95,10 @@ final readonly class RetypeStepExecutor
             return $context;
         }
 
-        return new RetypeStepContext(MemberDependencyGraphFactory::fromVirtualFiles($retypeResult->virtualFiles));
+        return new RetypeStepContext(MemberDependencyGraphFactory::refreshFromTouchedVirtualFiles(
+            previousBuild: $context->currentBuild,
+            touchedVirtualFiles: $retypeResult->virtualFiles,
+        ));
     }
 
     /**

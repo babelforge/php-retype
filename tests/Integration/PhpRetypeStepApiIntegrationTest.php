@@ -185,6 +185,8 @@ final class PhpRetypeStepApiIntegrationTest extends TestCase
         self::assertTrue($applied);
         self::assertTrue($requiresGraphRefresh);
         self::assertNotSame($previousContext->currentBuild, $nextContext->currentBuild);
+        self::assertTrue($nextContext->currentBuild->usedInMemoryFullFallback());
+        self::assertFalse($nextContext->currentBuild->usedInMemoryPartialRefresh());
     }
 
     /**
