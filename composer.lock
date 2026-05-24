@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a9122dd933ecd85eff6377034411c0f5",
+    "content-hash": "70ee2f8a1ee1849da9fef73dee9f5178",
     "packages": [
         {
             "name": "babelforge/member-graph",
