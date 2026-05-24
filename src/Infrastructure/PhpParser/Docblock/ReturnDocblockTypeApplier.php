@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Infrastructure\PhpParser\Docblock;
+namespace BabelForge\PhpRetype\Infrastructure\PhpParser\Docblock;
 
-use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperation;
-use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperationRole;
-use PhpNoobs\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeApplicationContext;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeMetadataApplierInterface;
+use BabelForge\PhpRetype\Domain\Retype\Operation\RetypeOperation;
+use BabelForge\PhpRetype\Domain\Retype\Operation\RetypeOperationRole;
+use BabelForge\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Application\RetypeApplicationContext;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Application\RetypeMetadataApplierInterface;
 use PhpParser\Comment\Doc;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;

@@ -2,30 +2,30 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Infrastructure\PhpParser;
+namespace BabelForge\PhpRetype\Infrastructure\PhpParser;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
-use PhpNoobs\PhpRetype\Application\Contract\RetypePlanApplierInterface;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
-use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperation;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypeResult;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeApplicationContext;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeMetadataApplierInterface;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeNodeApplierInterface;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Callable_\CallableReturnTypeNodeApplier;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\ClassConstant\ClassConstantTypeNodeApplier;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Docblock\ParameterDocblockTypeApplier;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Docblock\ReturnDocblockTypeApplier;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Docblock\VarDocblockTypeApplier;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Enum_\EnumBackingTypeNodeApplier;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Function_\FunctionReturnTypeNodeApplier;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Method\MethodReturnTypeNodeApplier;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Parameter\ParameterTypeNodeApplier;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Property\PropertyTypeNodeApplier;
-use PhpNoobs\PhpSource\VirtualPhpSourceFile;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
+use BabelForge\PhpRetype\Application\Contract\RetypePlanApplierInterface;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
+use BabelForge\PhpRetype\Domain\Retype\Operation\RetypeOperation;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypePlan;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypeResult;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Application\RetypeApplicationContext;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Application\RetypeMetadataApplierInterface;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Application\RetypeNodeApplierInterface;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Callable_\CallableReturnTypeNodeApplier;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\ClassConstant\ClassConstantTypeNodeApplier;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Docblock\ParameterDocblockTypeApplier;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Docblock\ReturnDocblockTypeApplier;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Docblock\VarDocblockTypeApplier;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Enum_\EnumBackingTypeNodeApplier;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Function_\FunctionReturnTypeNodeApplier;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Method\MethodReturnTypeNodeApplier;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Parameter\ParameterTypeNodeApplier;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Property\PropertyTypeNodeApplier;
+use BabelForge\PhpSource\VirtualPhpSourceFile;
 
 /**
  * Applies retype plans to PHPParser AST nodes stored in virtual files.

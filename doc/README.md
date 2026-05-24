@@ -4,7 +4,7 @@ Navigation: [Next: Overview](01-overview.md)
 
 This documentation describes the `PhpRetype` component, its public API, and its implementation boundaries.
 
-`PhpRetype` is a PHP refactoring library focused on safe type changes. It consumes `php-noobs/member-graph` for semantic source-node facts and uses `php-noobs/php-source-registry` virtual files for AST mutation and physical writing delegation.
+`PhpRetype` is a PHP refactoring library focused on safe type changes. It consumes `babelforge/member-graph` for semantic source-node facts and uses `babelforge/php-source-registry` virtual files for AST mutation and physical writing delegation.
 
 The package supports planning, applying, transaction-neutral step execution, and standalone in-memory transactions for declaration type changes, including properties, parameters, returns, class constants, enum backing types, closures, and arrow functions. It keeps native PHP type nodes and PHPDoc type strings as two explicit caller-provided values.
 
@@ -21,9 +21,9 @@ The package supports planning, applying, transaction-neutral step execution, and
 
 ## External Dependencies
 
-`PhpRetype` consumes `php-noobs/member-graph` to locate semantic source nodes.
+`PhpRetype` consumes `babelforge/member-graph` to locate semantic source nodes.
 
-`member-graph` depends on `php-noobs/php-source-registry`, which provides virtual PHP source files and PHPParser AST access. Physical file writing remains delegated to the source registry exposed by the `member-graph` build.
+`member-graph` depends on `babelforge/php-source-registry`, which provides virtual PHP source files and PHPParser AST access. Physical file writing remains delegated to the source registry exposed by the `member-graph` build.
 
 `PhpRetype` uses upstream semantic facts to decide which declarations can be changed safely.
 

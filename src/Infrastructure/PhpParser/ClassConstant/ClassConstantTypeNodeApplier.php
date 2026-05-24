@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Infrastructure\PhpParser\ClassConstant;
+namespace BabelForge\PhpRetype\Infrastructure\PhpParser\ClassConstant;
 
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
-use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperation;
-use PhpNoobs\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeApplicationContext;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application\RetypeNodeApplierInterface;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
+use BabelForge\PhpRetype\Domain\Retype\Operation\RetypeOperation;
+use BabelForge\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Application\RetypeApplicationContext;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\Application\RetypeNodeApplierInterface;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\ComplexType;

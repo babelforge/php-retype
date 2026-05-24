@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Application;
+namespace BabelForge\PhpRetype\Application;
 
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypeResult;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypeResult;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;

@@ -9,7 +9,7 @@ The public API is small and composable.
 Use this mode when `PhpRetype` builds its own `member-graph` input:
 
 ```php
-use PhpNoobs\PhpRetype\Application\PhpRetype;
+use BabelForge\PhpRetype\Application\PhpRetype;
 
 $retype = PhpRetype::fromDirectory(
     directories: [$projectPath . '/src'],
@@ -22,7 +22,7 @@ $retype = PhpRetype::fromDirectory(
 Use this mode when another tool already built a `member-graph` result:
 
 ```php
-use PhpNoobs\PhpRetype\Application\PhpRetype;
+use BabelForge\PhpRetype\Application\PhpRetype;
 
 $retype = PhpRetype::fromBuild($build);
 ```
@@ -34,7 +34,7 @@ This is the integration point for orchestration packages that already own a curr
 External orchestrators can use the transaction-neutral step API instead of the direct plan/apply helpers.
 
 ```php
-use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepContext;
+use BabelForge\PhpRetype\Domain\Retype\Step\RetypeStepContext;
 use PhpParser\Node\Name;
 
 $context = RetypeStepContext::fromBuild($build);

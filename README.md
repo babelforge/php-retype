@@ -1,6 +1,6 @@
 # PhpRetype
 
-`php-noobs/php-retype` is a semantic PHP type refactoring library built on `php-noobs/member-graph` and `php-noobs/php-source-registry`.
+`babelforge/php-retype` is a semantic PHP type refactoring library built on `babelforge/member-graph` and `babelforge/php-source-registry`.
 
 It changes PHP type declarations from semantic graph facts instead of textual search. The package supports method parameter, function parameter, method return, function return, property, class constant, enum backing, closure, and arrow-function type changes, with native PHP types and PHPDoc types provided as separate explicit inputs when the target supports both.
 
@@ -9,10 +9,10 @@ It changes PHP type declarations from semantic graph facts instead of textual se
 Add the VCS repositories and require the package with Composer:
 
 ```bash
-composer config repositories.php-source-registry vcs https://github.com/php-noobs/php-source-registry
-composer config repositories.member-graph vcs https://github.com/php-noobs/member-graph
-composer config repositories.php-retype vcs https://github.com/php-noobs/php-retype
-composer require php-noobs/php-retype:dev-main
+composer config repositories.php-source-registry vcs https://github.com/babelforge/php-source-registry
+composer config repositories.member-graph vcs https://github.com/babelforge/member-graph
+composer config repositories.php-retype vcs https://github.com/babelforge/php-retype
+composer require babelforge/php-retype:dev-main
 ```
 
 The package requires PHP 8.4 or newer.
@@ -20,7 +20,7 @@ The package requires PHP 8.4 or newer.
 ## Basic Usage
 
 ```php
-use PhpNoobs\PhpRetype\Application\PhpRetype;
+use BabelForge\PhpRetype\Application\PhpRetype;
 use PhpParser\Node\Name;
 
 $retype = PhpRetype::fromDirectory(
@@ -130,7 +130,7 @@ Transactions refresh the in-memory member graph after each applied type change a
 External orchestrators can execute transaction-neutral steps:
 
 ```php
-use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepContext;
+use BabelForge\PhpRetype\Domain\Retype\Step\RetypeStepContext;
 use PhpParser\Node\Name;
 
 $context = RetypeStepContext::fromBuild($build);

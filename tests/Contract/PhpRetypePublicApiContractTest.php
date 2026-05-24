@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Tests\Contract;
+namespace BabelForge\PhpRetype\Tests\Contract;
 
-use PhpNoobs\PhpRetype\Application\PhpRetype;
-use PhpNoobs\PhpRetype\Application\PhpRetypeTransaction;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypeResult;
-use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepContext;
-use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepResult;
-use PhpNoobs\PhpRetype\Domain\Retype\Transaction\RetypeTransactionResult;
-use PhpNoobs\PhpRetype\Domain\Retype\Transaction\RetypeTransactionStatus;
-use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
+use BabelForge\PhpRetype\Application\PhpRetype;
+use BabelForge\PhpRetype\Application\PhpRetypeTransaction;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypePlan;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypeResult;
+use BabelForge\PhpRetype\Domain\Retype\Step\RetypeStepContext;
+use BabelForge\PhpRetype\Domain\Retype\Step\RetypeStepResult;
+use BabelForge\PhpRetype\Domain\Retype\Transaction\RetypeTransactionResult;
+use BabelForge\PhpRetype\Domain\Retype\Transaction\RetypeTransactionStatus;
+use BabelForge\PhpSource\VirtualPhpSourceFileCollection;
 use PHPUnit\Framework\TestCase;
 
 /**

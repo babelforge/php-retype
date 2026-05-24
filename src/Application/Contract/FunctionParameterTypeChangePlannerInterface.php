@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Application\Contract;
+namespace BabelForge\PhpRetype\Application\Contract;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
-use PhpNoobs\PhpRetype\Domain\Retype\Request\FunctionParameterTypeChangeRequest;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypePlan;
+use BabelForge\PhpRetype\Domain\Retype\Request\FunctionParameterTypeChangeRequest;
 
 /**
  * Plans function parameter type changes from an external semantic source.

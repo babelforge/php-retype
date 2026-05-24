@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Domain\Retype\Step;
+namespace BabelForge\PhpRetype\Domain\Retype\Step;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
 
 /**
  * Carries the member graph build used by one orchestrated retype step.

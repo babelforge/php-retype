@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Domain\Retype\Request;
+namespace BabelForge\PhpRetype\Domain\Retype\Request;
 
-use PhpNoobs\PhpRetype\Domain\Retype\Validation\RetypeInputValidator;
+use BabelForge\PhpRetype\Domain\Retype\Validation\RetypeInputValidator;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;

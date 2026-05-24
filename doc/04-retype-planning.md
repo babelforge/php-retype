@@ -24,7 +24,7 @@ Planning does not mutate virtual files.
 For method parameter type changes, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->parameter('App\\Mailer', 'send', 'message', 0);
@@ -35,7 +35,7 @@ The returned parameter declaration matches are converted to retype operations.
 For function parameter type changes, planning starts from the same source-node locator with an empty owner and a fully-qualified function name:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->parameter('', 'App\\send_mail', 'message', 0);
@@ -46,7 +46,7 @@ The returned function parameter declaration matches are converted to retype oper
 For method return type changes, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->method('App\\Mailer', 'send');
@@ -57,7 +57,7 @@ Only `MEMBER_DECLARATION` matches backed by `PhpParser\Node\Stmt\ClassMethod` no
 For function return type changes, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->function('App\\send_mail');
@@ -68,7 +68,7 @@ Only `MEMBER_DECLARATION` matches backed by `PhpParser\Node\Stmt\Function_` node
 For property type changes, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $context = MemberGraphSourceNodeLocator::fromBuild($build)
     ->propertyDeclarationContext('App\\Mailer', ['transport', 'backupTransport']);
@@ -81,7 +81,7 @@ Grouped property declarations produce one operation per parent `Property` statem
 For class constant type changes, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->classConstant('App\\Config', 'DEFAULT_PORT');
@@ -92,7 +92,7 @@ Only `MEMBER_DECLARATION` matches backed by `PhpParser\Node\Const_` nodes are co
 For enum backing type changes, planning starts from:
 
 ```php
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
 
 $matches = MemberGraphSourceNodeLocator::fromBuild($build)
     ->owner('App\\Status');

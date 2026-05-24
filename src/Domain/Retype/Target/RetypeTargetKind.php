@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Domain\Retype\Target;
+namespace BabelForge\PhpRetype\Domain\Retype\Target;
 
 /**
  * Identifies the semantic target kind being retyped.

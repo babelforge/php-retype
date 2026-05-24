@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner;
+namespace BabelForge\PhpRetype\Infrastructure\MemberGraph\Planner;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
-use PhpNoobs\MemberGraph\Application\Source\Node\VirtualPhpSourceFileNodeMatchRole;
-use PhpNoobs\PhpRetype\Application\Contract\EnumBackingTypeChangePlannerInterface;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
-use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperation;
-use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperationCollection;
-use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperationRole;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
-use PhpNoobs\PhpRetype\Domain\Retype\Request\EnumBackingTypeChangeRequest;
-use PhpNoobs\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\VirtualPhpSourceFileNodeMatchRole;
+use BabelForge\PhpRetype\Application\Contract\EnumBackingTypeChangePlannerInterface;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
+use BabelForge\PhpRetype\Domain\Retype\Operation\RetypeOperation;
+use BabelForge\PhpRetype\Domain\Retype\Operation\RetypeOperationCollection;
+use BabelForge\PhpRetype\Domain\Retype\Operation\RetypeOperationRole;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypePlan;
+use BabelForge\PhpRetype\Domain\Retype\Request\EnumBackingTypeChangeRequest;
+use BabelForge\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
 use PhpParser\Node\Stmt\Enum_;
 
 /**

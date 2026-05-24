@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Tests\Integration;
+namespace BabelForge\PhpRetype\Tests\Integration;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
-use PhpNoobs\PhpRetype\Application\PhpRetype;
-use PhpNoobs\PhpRetype\Application\RetypeStepExecutor;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
-use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperationCollection;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
-use PhpNoobs\PhpRetype\Domain\Retype\Request\RetypeRequestInterface;
-use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepContext;
-use PhpNoobs\PhpRetype\Infrastructure\PhpParser\AstRetypePlanApplier;
-use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
+use BabelForge\PhpRetype\Application\PhpRetype;
+use BabelForge\PhpRetype\Application\RetypeStepExecutor;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
+use BabelForge\PhpRetype\Domain\Retype\Operation\RetypeOperationCollection;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypePlan;
+use BabelForge\PhpRetype\Domain\Retype\Request\RetypeRequestInterface;
+use BabelForge\PhpRetype\Domain\Retype\Step\RetypeStepContext;
+use BabelForge\PhpRetype\Infrastructure\PhpParser\AstRetypePlanApplier;
+use BabelForge\PhpSource\VirtualPhpSourceFileCollection;
 use PhpParser\Node\Name;
 use PHPUnit\Framework\TestCase;
 

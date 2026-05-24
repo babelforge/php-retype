@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Infrastructure\PhpParser\Application;
+namespace BabelForge\PhpRetype\Infrastructure\PhpParser\Application;
 
-use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperation;
+use BabelForge\PhpRetype\Domain\Retype\Operation\RetypeOperation;
 
 /**
  * Applies metadata changes associated with supported retype operations.

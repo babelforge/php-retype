@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Domain\Retype\Plan;
+namespace BabelForge\PhpRetype\Domain\Retype\Plan;
 
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
-use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
+use BabelForge\PhpSource\VirtualPhpSourceFileCollection;
 
 /**
  * Describes the outcome of applying a retype plan.

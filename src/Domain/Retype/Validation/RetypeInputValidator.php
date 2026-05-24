@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Domain\Retype\Validation;
+namespace BabelForge\PhpRetype\Domain\Retype\Validation;
 
 use PhpParser\Node;
 use PhpParser\Node\Identifier;

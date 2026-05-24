@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Domain\Retype\Transaction;
+namespace BabelForge\PhpRetype\Domain\Retype\Transaction;
 
 /**
  * Enumerates retype transaction statuses.

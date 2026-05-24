@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner;
+namespace BabelForge\PhpRetype\Infrastructure\MemberGraph\Planner;
 
-use PhpNoobs\PhpSource\VirtualPhpSourceFile;
+use BabelForge\PhpSource\VirtualPhpSourceFile;
 use PhpParser\Node;
 
 /**

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Application;
+namespace BabelForge\PhpRetype\Application;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
-use PhpNoobs\PhpRetype\Application\Contract\RetypePlanApplierInterface;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypeResult;
-use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepContext;
-use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepResult;
-use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
+use BabelForge\PhpRetype\Application\Contract\RetypePlanApplierInterface;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypePlan;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypeResult;
+use BabelForge\PhpRetype\Domain\Retype\Step\RetypeStepContext;
+use BabelForge\PhpRetype\Domain\Retype\Step\RetypeStepResult;
+use BabelForge\PhpSource\VirtualPhpSourceFileCollection;
 
 /**
  * Executes one retype plan against an orchestrable step context.

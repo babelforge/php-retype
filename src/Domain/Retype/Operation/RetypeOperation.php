@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Domain\Retype\Operation;
+namespace BabelForge\PhpRetype\Domain\Retype\Operation;
 
-use PhpNoobs\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
-use PhpNoobs\PhpSource\VirtualPhpSourceFile;
+use BabelForge\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
+use BabelForge\PhpSource\VirtualPhpSourceFile;
 use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\IntersectionType;

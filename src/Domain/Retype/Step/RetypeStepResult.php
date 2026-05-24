@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Domain\Retype\Step;
+namespace BabelForge\PhpRetype\Domain\Retype\Step;
 
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypeResult;
-use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypePlan;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypeResult;
+use BabelForge\PhpSource\VirtualPhpSourceFileCollection;
 
 /**
  * Describes the outcome of one orchestrated retype step.

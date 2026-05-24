@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Tests\Integration;
+namespace BabelForge\PhpRetype\Tests\Integration;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
-use PhpNoobs\PhpRetype\Application\PhpRetype;
-use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepContext;
-use PhpNoobs\PhpSource\VirtualPhpSourceFileCollection;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphFactory;
+use BabelForge\PhpRetype\Application\PhpRetype;
+use BabelForge\PhpRetype\Domain\Retype\Step\RetypeStepContext;
+use BabelForge\PhpSource\VirtualPhpSourceFileCollection;
 use PhpParser\Node\Identifier;
 use PHPUnit\Framework\TestCase;
 

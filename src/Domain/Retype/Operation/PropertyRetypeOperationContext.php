@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Domain\Retype\Operation;
+namespace BabelForge\PhpRetype\Domain\Retype\Operation;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;

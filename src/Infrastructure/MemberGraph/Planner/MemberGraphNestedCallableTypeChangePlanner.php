@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Infrastructure\MemberGraph\Planner;
+namespace BabelForge\PhpRetype\Infrastructure\MemberGraph\Planner;
 
-use PhpNoobs\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
-use PhpNoobs\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
-use PhpNoobs\MemberGraph\Application\Source\Node\VirtualPhpSourceFileNodeMatchRole;
-use PhpNoobs\PhpRetype\Application\Contract\NestedCallableTypeChangePlannerInterface;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
-use PhpNoobs\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
-use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperation;
-use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperationCollection;
-use PhpNoobs\PhpRetype\Domain\Retype\Operation\RetypeOperationRole;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
-use PhpNoobs\PhpRetype\Domain\Retype\Request\NestedCallableContainerKind;
-use PhpNoobs\PhpRetype\Domain\Retype\Request\NestedCallableKind;
-use PhpNoobs\PhpRetype\Domain\Retype\Request\NestedCallableTargetKind;
-use PhpNoobs\PhpRetype\Domain\Retype\Request\NestedCallableTypeChangeRequest;
-use PhpNoobs\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
+use BabelForge\MemberGraph\Application\Build\Factory\MemberDependencyGraphBuild;
+use BabelForge\MemberGraph\Application\Source\Node\MemberGraphSourceNodeLocator;
+use BabelForge\MemberGraph\Application\Source\Node\VirtualPhpSourceFileNodeMatchRole;
+use BabelForge\PhpRetype\Application\Contract\NestedCallableTypeChangePlannerInterface;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnostic;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticCollection;
+use BabelForge\PhpRetype\Domain\Retype\Diagnostic\RetypeDiagnosticSeverity;
+use BabelForge\PhpRetype\Domain\Retype\Operation\RetypeOperation;
+use BabelForge\PhpRetype\Domain\Retype\Operation\RetypeOperationCollection;
+use BabelForge\PhpRetype\Domain\Retype\Operation\RetypeOperationRole;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypePlan;
+use BabelForge\PhpRetype\Domain\Retype\Request\NestedCallableContainerKind;
+use BabelForge\PhpRetype\Domain\Retype\Request\NestedCallableKind;
+use BabelForge\PhpRetype\Domain\Retype\Request\NestedCallableTargetKind;
+use BabelForge\PhpRetype\Domain\Retype\Request\NestedCallableTypeChangeRequest;
+use BabelForge\PhpRetype\Domain\Retype\Target\RetypeTargetKind;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;

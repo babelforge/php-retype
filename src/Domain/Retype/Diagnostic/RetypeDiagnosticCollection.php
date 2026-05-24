@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Domain\Retype\Diagnostic;
+namespace BabelForge\PhpRetype\Domain\Retype\Diagnostic;
 
 /**
  * Collection of retype diagnostics.

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PhpNoobs\PhpRetype\Application;
+namespace BabelForge\PhpRetype\Application;
 
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypePlan;
-use PhpNoobs\PhpRetype\Domain\Retype\Plan\RetypeResult;
-use PhpNoobs\PhpRetype\Domain\Retype\Request\NestedCallableContainerKind;
-use PhpNoobs\PhpRetype\Domain\Retype\Request\NestedCallableKind;
-use PhpNoobs\PhpRetype\Domain\Retype\Request\NestedCallableTargetKind;
-use PhpNoobs\PhpRetype\Domain\Retype\Request\NestedCallableTypeChangeRequest;
-use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepContext;
-use PhpNoobs\PhpRetype\Domain\Retype\Step\RetypeStepResult;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypePlan;
+use BabelForge\PhpRetype\Domain\Retype\Plan\RetypeResult;
+use BabelForge\PhpRetype\Domain\Retype\Request\NestedCallableContainerKind;
+use BabelForge\PhpRetype\Domain\Retype\Request\NestedCallableKind;
+use BabelForge\PhpRetype\Domain\Retype\Request\NestedCallableTargetKind;
+use BabelForge\PhpRetype\Domain\Retype\Request\NestedCallableTypeChangeRequest;
+use BabelForge\PhpRetype\Domain\Retype\Step\RetypeStepContext;
+use BabelForge\PhpRetype\Domain\Retype\Step\RetypeStepResult;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;
